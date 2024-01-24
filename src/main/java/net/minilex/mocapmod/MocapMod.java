@@ -2,6 +2,8 @@ package net.minilex.mocapmod;
 
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
@@ -22,12 +24,19 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
+import net.minilex.mocapmod.thread.MocapAction;
+import net.minilex.mocapmod.thread.MocapRecorder;
 import org.slf4j.Logger;
+
+import java.awt.*;
+import java.util.*;
+import java.util.List;
 
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod(MocapMod.MODID)
 public class MocapMod
 {
+    private static MocapMod instance;
     // Define mod id in a common place for everything to reference
     public static final String MODID = "mocapmod";
     // Directly reference a slf4j logger
@@ -42,8 +51,12 @@ public class MocapMod
     // Creates a new BlockItem with the id "examplemod:example_block", combining the namespace and path
     public static final RegistryObject<Item> EXAMPLE_BLOCK_ITEM = ITEMS.register("example_block", () -> new BlockItem(EXAMPLE_BLOCK.get(), new Item.Properties()));
 
+    public Map<Player, MocapRecorder> recordThreads = Collections
+            .synchronizedMap(new HashMap<Player, MocapRecorder>());
+
     public MocapMod()
     {
+        instance = this;
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
         // Register the commonSetup method for modloading
@@ -93,5 +106,23 @@ public class MocapMod
             LOGGER.info("HELLO FROM CLIENT SETUP");
             LOGGER.info("MINECRAFT NAME >> {}", Minecraft.getInstance().getUser().getName());
         }
+    }
+
+    public static MocapMod getInstance() {
+        return instance;
+    }
+
+    public List<MocapAction> getActionListForPlayer(Player ep) {
+        MocapRecorder aRecorder = recordThreads.get(ep);
+
+        if (aRecorder == null) {
+            return null;
+        }
+
+        return aRecorder.eventsList;
+    }
+
+    public void broadcastMsg(String msg) {
+        return;
     }
 }
