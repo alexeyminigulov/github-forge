@@ -8,12 +8,13 @@ import net.minecraftforge.event.RegisterCommandsEvent;
 
 import javax.annotation.Nullable;
 
+/*
+* This class is not used, so it can be deleted in future
+* */
 public class PreLoadParams {
     private static PreLoadParams instance;
     public CommandDispatcher<CommandSourceStack> dispatcher;
     public CommandBuildContext cbc;
-
-    public CommandSourceStack commandSource;
 
     public PreLoadParams() {
     }

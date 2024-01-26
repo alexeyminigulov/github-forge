@@ -39,10 +39,6 @@ public class RecordThread implements Runnable {
     private int itemsEquipped[] = new int[5];
     private List<MocapAction> eventList;
 
-    private CommandDispatcher<CommandSourceStack> dispatcher;
-
-    private CommandBuildContext cbc;
-
     public RecordThread(Player _player, String capname) {
         // Create a new, second thread
         try {
@@ -275,29 +271,21 @@ public class RecordThread implements Runnable {
                 // End of stream
             }
 
-//            LocalPlayer fakePlayer = new LocalPlayer(Minecraft.getInstance(),
-//                    Minecraft.getInstance().level,
-//                    Minecraft.getInstance().player.connection,
-//                    Minecraft.getInstance().player.getStats(),
-//                    Minecraft.getInstance().player.getRecipeBook(), true, true);
-
-            dispatcher = PreLoadParams.getInstance().dispatcher;
-            cbc = PreLoadParams.getInstance().cbc;
-
             UUID id = UUID.randomUUID();
             GameProfile profile = new GameProfile(id, "Sasha");
+            Minecraft minecraft = Minecraft.getInstance();
             
-            ServerPlayer fakePlayer = new FakePlayer(Minecraft.getInstance().getSingleplayerServer(),
-                    Minecraft.getInstance().getSingleplayerServer().getPlayerList().getServer().getLevel(Level.OVERWORLD),
+            ServerPlayer fakePlayer = new FakePlayer(minecraft.getSingleplayerServer(),
+                    minecraft.getSingleplayerServer().getPlayerList().getServer().getLevel(Level.OVERWORLD),
                     profile);
 
             MinecraftServer minecraftServer = Minecraft.getInstance().getSingleplayerServer();
             Position pos = result.stream().findFirst().get();
             fakePlayer.setPos(pos.x, pos.y, pos.z);
-            Minecraft.getInstance().getSingleplayerServer().overworld().addNewPlayer(fakePlayer);
+            minecraftServer.overworld().addNewPlayer(fakePlayer);
 
             ClientboundPlayerInfoUpdatePacket cpf = new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER, fakePlayer);
-            Minecraft.getInstance().getConnection().handlePlayerInfoUpdate(cpf);
+            minecraft.getConnection().handlePlayerInfoUpdate(cpf);
 
             result.forEach(position -> System.out.println(position));
 
