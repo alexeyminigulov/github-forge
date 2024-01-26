@@ -4,12 +4,25 @@ import java.io.*;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
+import com.mojang.authlib.GameProfile;
+import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.phys.Vec3;
 import net.minilex.mocapmod.MocapMod;
@@ -26,7 +39,9 @@ public class RecordThread implements Runnable {
     private int itemsEquipped[] = new int[5];
     private List<MocapAction> eventList;
 
-    private String resultForFile = "";
+    private CommandDispatcher<CommandSourceStack> dispatcher;
+
+    private CommandBuildContext cbc;
 
     public RecordThread(Player _player, String capname) {
         // Create a new, second thread
@@ -61,14 +76,9 @@ public class RecordThread implements Runnable {
     // This is the entry point for the second thread.
     public void run() {
         try {
-            //file.writeShort(0xEC01);
 
             if (capture) {
                 trackAndWriteMovement();
-                //trackSwing();
-                //trackHeldItem();
-                //trackArmor();
-                //writeActions();
 
                 if (player.isDeadOrDying()) {
                     capture = false;
@@ -87,29 +97,7 @@ public class RecordThread implements Runnable {
     private void trackAndWriteMovement() throws IOException {
         Vec3 entityPos = player.position();
         Position pos = new Position(entityPos.x, entityPos.y, entityPos.z);
-        //resultForFile += pos.toString();
         o.writeObject(pos);
-//        position[0] = entityPos.x;
-//        position[1] = entityPos.y;
-//        position[2] = entityPos.z;
-//        file.writeDouble(position[0]);
-//        file.writeDouble(position[1]);
-//        file.writeDouble(position[2]);
-
-//        file.writeFloat(player.getXRot());
-//        file.writeFloat(player.getYRot());
-//        file.writeDouble(player.xo);
-//        file.writeDouble(player.yo);
-//        file.writeDouble(player.zo);
-//        file.writeDouble(player.xxa);
-//        file.writeDouble(player.yya);
-//        file.writeDouble(player.zza);
-//        file.writeFloat(player.fallDistance);
-//        file.writeBoolean(player.isFallFlying());
-//        file.writeBoolean(player.getPose() == Pose.SITTING);
-//        file.writeBoolean(player.isSprinting());
-//        file.writeBoolean(player.isOnGround());
-//        file.writeBoolean(false);
     }
 
     private void trackArmor() {
@@ -286,6 +274,30 @@ public class RecordThread implements Runnable {
             } catch (EOFException e) {
                 // End of stream
             }
+
+//            LocalPlayer fakePlayer = new LocalPlayer(Minecraft.getInstance(),
+//                    Minecraft.getInstance().level,
+//                    Minecraft.getInstance().player.connection,
+//                    Minecraft.getInstance().player.getStats(),
+//                    Minecraft.getInstance().player.getRecipeBook(), true, true);
+
+            dispatcher = PreLoadParams.getInstance().dispatcher;
+            cbc = PreLoadParams.getInstance().cbc;
+
+            UUID id = UUID.randomUUID();
+            GameProfile profile = new GameProfile(id, "Sasha");
+            
+            ServerPlayer fakePlayer = new FakePlayer(Minecraft.getInstance().getSingleplayerServer(),
+                    Minecraft.getInstance().getSingleplayerServer().getPlayerList().getServer().getLevel(Level.OVERWORLD),
+                    profile);
+
+            MinecraftServer minecraftServer = Minecraft.getInstance().getSingleplayerServer();
+            Position pos = result.stream().findFirst().get();
+            fakePlayer.setPos(pos.x, pos.y, pos.z);
+            Minecraft.getInstance().getSingleplayerServer().overworld().addNewPlayer(fakePlayer);
+
+            ClientboundPlayerInfoUpdatePacket cpf = new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER, fakePlayer);
+            Minecraft.getInstance().getConnection().handlePlayerInfoUpdate(cpf);
 
             result.forEach(position -> System.out.println(position));
 
