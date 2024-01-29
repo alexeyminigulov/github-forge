@@ -11,6 +11,8 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minilex.mocapmod.MocapMod;
+import net.minilex.mocapmod.thread.FakePlayer;
+import net.minilex.mocapmod.thread.Position;
 import net.minilex.mocapmod.util.KeyBiding;
 import net.minilex.mocapmod.thread.RecordThread;
 
@@ -30,6 +32,7 @@ public class ClientEvents {
         @SubscribeEvent
         public static void onKeyInput(InputEvent.Key event) {
             if(KeyBiding.DRINKING_KEY.consumeClick()) {
+                tickCount = 0;
                 if (recordThread == null) {
                     recordThread = RecordThread.getInstance();
                     Path path = Minecraft.getInstance().getSingleplayerServer().getWorldPath(LevelResource.ROOT);
@@ -52,11 +55,30 @@ public class ClientEvents {
 
         @SubscribeEvent
         public static void onTick(TickEvent tick) {
+            if (recordThread != null) tickCount++;
             if (recordThread != null && recordThread.capture) {
-                tickCount++;
-                if (tickCount % 100 == 0) {
-                    System.out.println("Tick");
+                //tickCount++;
+                if (tickCount % 25 == 0) {
                     recordThread.run();
+                }
+            }
+            if (recordThread != null) {
+                FakePlayer fakePlayer = recordThread.fakePlayer;
+                if (fakePlayer != null) {
+                    //tickCount++;
+                    if (tickCount % 25 == 0) {
+                        Position[] position = recordThread.result.toArray(new Position[recordThread.result.size()]);
+                        fakePlayer.setPos(
+                                position[recordThread.positionIndex].x,
+                                position[recordThread.positionIndex].y,
+                                position[recordThread.positionIndex].z);
+                        fakePlayer.setXRot(position[recordThread.positionIndex].rotX);
+                        fakePlayer.setYRot(position[recordThread.positionIndex].rotY);
+                        fakePlayer.setYHeadRot(position[recordThread.positionIndex].rotY);
+                        System.out.println(position[recordThread.positionIndex].toString());
+                        recordThread.positionIndex++;
+                        if(recordThread.positionIndex == position.length) recordThread.positionIndex = 0;
+                    }
                 }
             }
         }

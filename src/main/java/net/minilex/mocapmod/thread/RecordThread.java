@@ -1,10 +1,7 @@
 package net.minilex.mocapmod.thread;
 
 import java.io.*;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
@@ -19,18 +16,18 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Pose;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.LevelResource;
+import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minilex.mocapmod.MocapMod;
 
 public class RecordThread implements Runnable {
 
     private static RecordThread instance;
-    private Player player;
+    private LocalPlayer player;
     public Boolean capture;
     private Boolean lastTickSwipe = false;
     private File dir;
@@ -38,8 +35,11 @@ public class RecordThread implements Runnable {
     private ObjectOutputStream o;
     private int itemsEquipped[] = new int[5];
     private List<MocapAction> eventList;
+    public FakePlayer fakePlayer;
+    public Set<Position> result;
+    public int positionIndex = 0;
 
-    public RecordThread(Player _player, String capname) {
+    public RecordThread(LocalPlayer _player, String capname) {
         // Create a new, second thread
         try {
 
@@ -92,7 +92,9 @@ public class RecordThread implements Runnable {
 
     private void trackAndWriteMovement() throws IOException {
         Vec3 entityPos = player.position();
-        Position pos = new Position(entityPos.x, entityPos.y, entityPos.z);
+        Vec2 entityRot = player.getRotationVector();
+        Position pos = new Position(entityPos.x, entityPos.y, entityPos.z, entityRot.x, entityRot.y);
+        System.out.println("Recording postion is " + pos);
         o.writeObject(pos);
     }
 
@@ -166,75 +168,6 @@ public class RecordThread implements Runnable {
         }
     }
 
-//    private void writeActions() throws IOException {
-//        // Any actions?
-//        if (eventList != null && eventList.size() > 0) {
-//            file.writeBoolean(true);
-//            MocapAction ma = eventList.get(0);
-//            file.writeByte(ma.type);
-//
-//            switch (ma.type) {
-//                case MocapActionTypes.CHAT: {
-//                    file.writeUTF(ma.message);
-//                    break;
-//                }
-//
-//                case MocapActionTypes.SWIPE: {
-//                    break;
-//                }
-//
-//                case MocapActionTypes.DROP: {
-//                    //CompressedStreamTools.write(ma.itemData, in);
-//                    break;
-//                }
-//
-//                case MocapActionTypes.EQUIP: {
-//                    file.writeInt(ma.armorSlot);
-//                    file.writeInt(ma.armorId);
-//                    file.writeInt(ma.armorDmg);
-//
-//                    if (ma.armorId != -1) {
-//                        //CompressedStreamTools.write(ma.itemData, in);
-//                    }
-//
-//                    break;
-//                }
-//
-//                case MocapActionTypes.SHOOTARROW: {
-//                    file.writeInt(ma.arrowCharge);
-//                    break;
-//                }
-//
-//                case MocapActionTypes.PLACEBLOCK: {
-//                    file.writeInt(ma.xCoord);
-//                    file.writeInt(ma.yCoord);
-//                    file.writeInt(ma.zCoord);
-//                    //CompressedStreamTools.write(ma.itemData, in);
-//                    break;
-//                }
-//
-//                case MocapActionTypes.BREAKBLOCK: {
-//                    file.writeInt(ma.xCoord);
-//                    file.writeInt(ma.yCoord);
-//                    file.writeInt(ma.zCoord);
-//                    break;
-//                }
-//
-//                case MocapActionTypes.LOGOUT: {
-//                    MocapMod.getInstance().recordThreads.remove(player);
-//                    MocapMod.getInstance().broadcastMsg("Stopped recording "
-//                            + player.getDisplayName() + ". Bye!");
-//                    capture = false;
-//                    break;
-//                }
-//            }
-//
-//            eventList.remove(0);
-//        } else {
-//            file.writeBoolean(false);
-//        }
-//    }
-
     public static RecordThread getInstance() {
         if (instance == null) {
             RecordThread recordThread = new RecordThread(Minecraft.getInstance().player, "loh");
@@ -262,7 +195,7 @@ public class RecordThread implements Runnable {
                     + ".mocap");
             ObjectInputStream oi = new ObjectInputStream(fi);
 
-            Set<Position> result = new HashSet<>();
+            result = new LinkedHashSet<>();
             try {
                 for (;;) {
                     result.add((Position) oi.readObject());
@@ -270,18 +203,24 @@ public class RecordThread implements Runnable {
             } catch (EOFException e) {
                 // End of stream
             }
+            /*List<Position> resultList = result.stream()
+                    .sorted(Comparator.comparing(Position::getRowId))
+                    .collect(Collectors.toList());*/
 
             UUID id = UUID.randomUUID();
             GameProfile profile = new GameProfile(id, "Sasha");
             Minecraft minecraft = Minecraft.getInstance();
             
-            ServerPlayer fakePlayer = new FakePlayer(minecraft.getSingleplayerServer(),
+            fakePlayer = new FakePlayer(minecraft.getSingleplayerServer(),
                     minecraft.getSingleplayerServer().getPlayerList().getServer().getLevel(Level.OVERWORLD),
                     profile);
 
             MinecraftServer minecraftServer = Minecraft.getInstance().getSingleplayerServer();
             Position pos = result.stream().findFirst().get();
             fakePlayer.setPos(pos.x, pos.y, pos.z);
+            fakePlayer.setXRot(pos.rotX);
+            fakePlayer.setYRot(pos.rotY);
+            fakePlayer.setYHeadRot(pos.rotY);
             minecraftServer.overworld().addNewPlayer(fakePlayer);
 
             ClientboundPlayerInfoUpdatePacket cpf = new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER, fakePlayer);
