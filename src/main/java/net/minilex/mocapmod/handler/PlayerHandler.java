@@ -25,25 +25,36 @@ public class PlayerHandler {
     public void handle() {
         tickCount = 0;
         if (recordThread.state == RecordingState.IDLE) {
-            Path path = minecraft.getSingleplayerServer().getWorldPath(LevelResource.ROOT);
-            minecraft.player.sendSystemMessage(Component.literal("Pressed a Key!!!  " + path.toString()));
-            if (recordThread.state == RecordingState.IDLE) {
-                recordThread.state = RecordingState.RECORDING;
-                System.out.println("Start recording");
-            }
+            minecraft.player.sendSystemMessage(Component.literal("Pressed a Key!!! "));
+            recordThread.state = RecordingState.RECORDING;
+            changeState(RecordingState.RECORDING);
         } else if (recordThread.state == RecordingState.RECORDING) {
             recordThread.state = RecordingState.STOP;
-            System.out.println("Stop recording");
-            //recordThread.stop();
-            minecraft.player.sendSystemMessage(Component.literal("The End!!!  "));
-            FileOutputStream file = recordThread.getFile();
-            recordThread.stop();
-            tickCount = 0;
-            recordThread.read();
-            return;
+            changeState(RecordingState.STOP);
         } else if (recordThread.state == RecordingState.PLAYING) {
             recordThread.state = RecordingState.IDLE;
-            recordThread.fakePlayer.remove(Entity.RemovalReason.KILLED);
+            changeState(RecordingState.IDLE);
+        }
+    }
+    private void changeState(RecordingState newState) {
+        switch (newState) {
+            case IDLE:
+                System.out.println("State is IDLE");
+                recordThread.fakePlayer.remove(Entity.RemovalReason.KILLED);
+                break;
+            case RECORDING:
+                System.out.println("State is RECORDING");
+                break;
+            case STOP:
+                System.out.println("State is STOP");
+                minecraft.player.sendSystemMessage(Component.literal("The End!!!  "));
+                recordThread.stop();
+                tickCount = 0;
+                recordThread.read();
+                break;
+            case PLAYING:
+                System.out.println("State is PLAYING");
+                break;
         }
     }
     public void tick() {
