@@ -4,86 +4,65 @@ import java.io.*;
 import java.util.*;
 
 import com.mojang.authlib.GameProfile;
-import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.commands.CommandBuildContext;
-import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.Pose;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minilex.mocapmod.MocapMod;
+import net.minilex.mocapmod.state.RecordingState;
 
 public class RecordThread implements Runnable {
 
     private static RecordThread instance;
     private LocalPlayer player;
-    public Boolean capture;
-    private Boolean lastTickSwipe = false;
+    public RecordingState state;
+    //private Boolean lastTickSwipe = false;
     private File dir;
     private FileOutputStream file;
     private ObjectOutputStream o;
-    private int itemsEquipped[] = new int[5];
-    private List<MocapAction> eventList;
+    //private int itemsEquipped[] = new int[5];
+    //private List<MocapAction> eventList;
     public FakePlayer fakePlayer;
     public Set<Position> result;
     public int positionIndex = 0;
 
     public RecordThread(LocalPlayer _player, String capname) {
-        // Create a new, second thread
         try {
-
             dir = new File(Minecraft.getInstance().getSingleplayerServer().getWorldPath(LevelResource.ROOT)
                     + "/" + "mocaps");
-
             if (!dir.exists()) {
                 dir.mkdirs();
             }
-
             file = new FileOutputStream(dir.getAbsolutePath() + "/" + capname
                     + ".mocap");
-
             o = new ObjectOutputStream(file);
-            //file.setLength(0);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
-
         player = _player;
-        capture = false;
-        eventList = MocapMod.getInstance().getActionListForPlayer(player);
-        //t = new Thread(this, "Mocap Record Thread");
-        //t.start();
+        state = RecordingState.IDLE;
+        //eventList = MocapMod.getInstance().getActionListForPlayer(player);
         instance = this;
     }
 
-    // This is the entry point for the second thread.
     public void run() {
         try {
-
-            if (capture) {
+            if (state == RecordingState.RECORDING) {
                 trackAndWriteMovement();
 
                 if (player.isDeadOrDying()) {
-                    capture = false;
+                    state = RecordingState.STOP;
                     MocapMod.getInstance().recordThreads.remove(player);
                     MocapMod.getInstance().broadcastMsg("Stopped recording "
                             + player.getDisplayName() + ". RIP.");
                 }
             }
-            //in.close();
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -97,77 +76,6 @@ public class RecordThread implements Runnable {
         System.out.println("Recording postion is " + pos);
         o.writeObject(pos);
     }
-
-    private void trackArmor() {
-        /*
-         * Track armor equipped.
-         */
-        // TODO: Sequential equipping of same item id but different type =
-        // problem.
-        for (int ci = 1; ci < 5; ci++) {
-            ItemStack armor = player.getInventory().armor.get(ci - 1);
-            if (armor != null) {
-                if (Item.getId(armor.getItem()) != itemsEquipped[ci]) {
-                    itemsEquipped[ci] = Item.getId(armor.getItem());
-                    MocapAction ma = new MocapAction(MocapActionTypes.EQUIP);
-                    ma.armorSlot = ci;
-                    ma.armorId = itemsEquipped[ci];
-                    ma.armorDmg = armor.getDamageValue();
-                    //ma.itemData = player.getInventory().armor.get(ci - 1);
-                    eventList.add(ma);
-                }
-            } else {
-                // TODO
-                if (itemsEquipped[ci] != -1) {
-                    itemsEquipped[ci] = -1;
-                    MocapAction ma = new MocapAction(MocapActionTypes.EQUIP);
-                    ma.armorSlot = ci;
-                    ma.armorId = itemsEquipped[ci];
-                    ma.armorDmg = 0;
-                    eventList.add(ma);
-                }
-            }
-        }
-    }
-
-    private void trackHeldItem() {
-        if (player.getItemInHand(player.getUsedItemHand()) != null) {
-            if (Item.getId(player.getItemInHand(player.getUsedItemHand()).getItem()) != itemsEquipped[0]) {
-                itemsEquipped[0] = Item.getId(player.getItemInHand(player.getUsedItemHand())
-                        .getItem());
-                MocapAction ma = new MocapAction(MocapActionTypes.EQUIP);
-                ma.armorSlot = 0;
-                ma.armorId = itemsEquipped[0];
-                ma.armorDmg = player.getItemInHand(player.getUsedItemHand()).getDamageValue();
-                //player.getHeldItem().writeToNBT(ma.itemData);
-                eventList.add(ma);
-            }
-        } else {
-            if (itemsEquipped[0] != -1) {
-                itemsEquipped[0] = -1;
-                MocapAction ma = new MocapAction(MocapActionTypes.EQUIP);
-                ma.armorSlot = 0;
-                ma.armorId = itemsEquipped[0];
-                ma.armorDmg = 0;
-                eventList.add(ma);
-            }
-        }
-    }
-
-    private void trackSwing() {
-        /*
-         * Track "Swings" weapon / fist.
-         */
-        if (player.swinging) {
-            if (!lastTickSwipe) {
-                lastTickSwipe = true;
-                eventList.add(new MocapAction(MocapActionTypes.SWIPE));
-            }
-        } else {
-            lastTickSwipe = false;
-        }
-    }
-
     public static RecordThread getInstance() {
         if (instance == null) {
             RecordThread recordThread = new RecordThread(Minecraft.getInstance().player, "loh");
@@ -190,6 +98,7 @@ public class RecordThread implements Runnable {
     }
 
     public void read() {
+        state = RecordingState.PLAYING;
         try {
             FileInputStream fi = new FileInputStream(dir.getAbsolutePath() + "/" + "loh"
                     + ".mocap");
