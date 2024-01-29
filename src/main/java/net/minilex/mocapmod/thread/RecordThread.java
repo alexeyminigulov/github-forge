@@ -6,8 +6,10 @@ import java.util.*;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.phys.Vec2;
@@ -19,10 +21,11 @@ public class RecordThread implements Runnable {
 
     private static RecordThread instance;
     private LocalPlayer player;
-    public RecordingState state;
+    private RecordingState state;
     //private Boolean lastTickSwipe = false;
     private File dir;
     private FileOutputStream file;
+    private String fileName;
     private ObjectOutputStream o;
     //private int itemsEquipped[] = new int[5];
     //private List<MocapAction> eventList;
@@ -31,20 +34,7 @@ public class RecordThread implements Runnable {
     public int positionIndex = 0;
 
     public RecordThread(LocalPlayer _player, String capname) {
-        try {
-            dir = new File(Minecraft.getInstance().getSingleplayerServer().getWorldPath(LevelResource.ROOT)
-                    + "/" + "mocaps");
-            if (!dir.exists()) {
-                dir.mkdirs();
-            }
-            file = new FileOutputStream(dir.getAbsolutePath() + "/" + capname
-                    + ".mocap");
-            o = new ObjectOutputStream(file);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        fileName = capname;
         player = _player;
         state = RecordingState.IDLE;
         //eventList = MocapMod.getInstance().getActionListForPlayer(player);
@@ -76,18 +66,33 @@ public class RecordThread implements Runnable {
         System.out.println("Recording postion is " + pos);
         o.writeObject(pos);
     }
+    private void initFile(String capname) {
+        try {
+            dir = new File(Minecraft.getInstance().getSingleplayerServer().getWorldPath(LevelResource.ROOT)
+                    + "/" + "mocaps");
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+            file = new FileOutputStream(dir.getAbsolutePath() + "/" + capname
+                    + ".mocap");
+            o = new ObjectOutputStream(file);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
     public static RecordThread getInstance() {
         if (instance == null) {
             RecordThread recordThread = new RecordThread(Minecraft.getInstance().player, "loh");
         }
         return instance;
     }
-
-    public FileOutputStream getFile() {
-        return file;
+    public RecordingState getState() {
+        return state;
     }
 
-    public void stop() {
+    private void stop() {
         try {
             //o.writeObject(resultForFile);
             file.close();
@@ -97,7 +102,7 @@ public class RecordThread implements Runnable {
         }
     }
 
-    public void read() {
+    private void read() {
         state = RecordingState.PLAYING;
         try {
             FileInputStream fi = new FileInputStream(dir.getAbsolutePath() + "/" + "loh"
@@ -143,6 +148,24 @@ public class RecordThread implements Runnable {
 
         } catch (ClassNotFoundException e) {
 
+        }
+    }
+    public void changeState(RecordingState newState) {
+        if (state == RecordingState.IDLE && newState == RecordingState.RECORDING) {
+            state = newState;
+            initFile(fileName);
+            System.out.println("State is RECORDING");
+        } else if (state == RecordingState.RECORDING && newState == RecordingState.STOP) {
+            Minecraft.getInstance().player.sendSystemMessage(Component.literal("The End!!!  "));
+            state = newState;
+            this.stop();
+            this.read();
+            System.out.println("State is STOP && PLAY");
+        } else if (state == RecordingState.PLAYING && newState == RecordingState.IDLE) {
+            state = newState;
+            this.fakePlayer.remove(Entity.RemovalReason.KILLED);
+            this.positionIndex = 0;
+            System.out.println("State is IDLE and Remove fake");
         }
     }
 }

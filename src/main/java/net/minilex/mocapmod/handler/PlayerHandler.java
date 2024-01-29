@@ -9,9 +9,6 @@ import net.minilex.mocapmod.thread.FakePlayer;
 import net.minilex.mocapmod.thread.Position;
 import net.minilex.mocapmod.thread.RecordThread;
 
-import java.io.FileOutputStream;
-import java.nio.file.Path;
-
 public class PlayerHandler {
     public static int tickCount = 0;
     private RecordThread recordThread;
@@ -24,48 +21,24 @@ public class PlayerHandler {
     }
     public void handle() {
         tickCount = 0;
-        if (recordThread.state == RecordingState.IDLE) {
+        if (recordThread.getState() == RecordingState.IDLE) {
             minecraft.player.sendSystemMessage(Component.literal("Pressed a Key!!! "));
-            recordThread.state = RecordingState.RECORDING;
-            changeState(RecordingState.RECORDING);
-        } else if (recordThread.state == RecordingState.RECORDING) {
-            recordThread.state = RecordingState.STOP;
-            changeState(RecordingState.STOP);
-        } else if (recordThread.state == RecordingState.PLAYING) {
-            recordThread.state = RecordingState.IDLE;
-            changeState(RecordingState.IDLE);
-        }
-    }
-    private void changeState(RecordingState newState) {
-        switch (newState) {
-            case IDLE:
-                System.out.println("State is IDLE");
-                recordThread.fakePlayer.remove(Entity.RemovalReason.KILLED);
-                break;
-            case RECORDING:
-                System.out.println("State is RECORDING");
-                break;
-            case STOP:
-                System.out.println("State is STOP");
-                minecraft.player.sendSystemMessage(Component.literal("The End!!!  "));
-                recordThread.stop();
-                tickCount = 0;
-                recordThread.read();
-                break;
-            case PLAYING:
-                System.out.println("State is PLAYING");
-                break;
+            recordThread.changeState(RecordingState.RECORDING);
+        } else if (recordThread.getState() == RecordingState.RECORDING) {
+            recordThread.changeState(RecordingState.STOP);
+        } else if (recordThread.getState() == RecordingState.PLAYING) {
+            recordThread.changeState(RecordingState.IDLE);
         }
     }
     public void tick() {
         //if (recordThread != null) tickCount++;
-        if (recordThread.state == RecordingState.RECORDING) {
+        if (recordThread.getState() == RecordingState.RECORDING) {
             tickCount++;
             if (tickCount % 25 == 0) {
                 recordThread.run();
             }
         }
-        if (recordThread.state == RecordingState.PLAYING) {
+        if (recordThread.getState() == RecordingState.PLAYING) {
             tickCount++;
             FakePlayer fakePlayer = recordThread.fakePlayer;
             if (fakePlayer != null) {
