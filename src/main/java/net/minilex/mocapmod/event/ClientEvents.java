@@ -1,5 +1,7 @@
 package net.minilex.mocapmod.event;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
@@ -20,6 +22,9 @@ public class ClientEvents {
             if(KeyBiding.DRINKING_KEY.consumeClick()) {
                 if (playerHandler == null) playerHandler = PlayerHandler.getInstance();
                 playerHandler.handle();
+            }
+            if(KeyBiding.CHANGE_ACTOR.consumeClick()) {
+                Minecraft.getInstance().player.sendSystemMessage(Component.literal("Pressed key I "));
             }
         }
 

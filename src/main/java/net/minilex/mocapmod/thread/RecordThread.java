@@ -104,7 +104,6 @@ public class RecordThread implements Runnable {
     }
 
     private void read() {
-        state = RecordingState.PLAYING;
         try {
             FileInputStream fi = new FileInputStream(dir.getAbsolutePath() + "/" + "loh"
                     + ".mocap");
@@ -163,8 +162,11 @@ public class RecordThread implements Runnable {
             Minecraft.getInstance().player.sendSystemMessage(Component.literal("The End!!!  "));
             state = newState;
             this.stop();
+            System.out.println("State is STOP");
+        } else if (state == RecordingState.STOP && newState == RecordingState.PLAYING) {
+            state = newState;
             this.read();
-            System.out.println("State is STOP && PLAY");
+            System.out.println("State is PLAYING");
         } else if (state == RecordingState.PLAYING && newState == RecordingState.IDLE) {
             state = newState;
             this.fakePlayer.remove(Entity.RemovalReason.KILLED);

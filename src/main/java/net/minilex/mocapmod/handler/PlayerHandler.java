@@ -26,6 +26,8 @@ public class PlayerHandler {
             recordThread.changeState(RecordingState.RECORDING);
         } else if (recordThread.getState() == RecordingState.RECORDING) {
             recordThread.changeState(RecordingState.STOP);
+        } else if (recordThread.getState() == RecordingState.STOP) {
+            recordThread.changeState(RecordingState.PLAYING);
         } else if (recordThread.getState() == RecordingState.PLAYING) {
             recordThread.changeState(RecordingState.IDLE);
         }
