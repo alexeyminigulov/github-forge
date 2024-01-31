@@ -10,7 +10,12 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.phys.Vec2;
@@ -30,7 +35,7 @@ public class RecordThread implements Runnable {
     private ObjectOutputStream o;
     //private int itemsEquipped[] = new int[5];
     //private List<MocapAction> eventList;
-    public FakePlayer fakePlayer;
+    public LivingEntity fakePlayer;
     public Set<Position> result;
     public int positionIndex = 0;
 
@@ -138,9 +143,9 @@ public class RecordThread implements Runnable {
             fakePlayer.setXRot(pos.rotX);
             fakePlayer.setYRot(pos.rotY);
             fakePlayer.setYHeadRot(pos.rotY);
-            minecraftServer.overworld().addNewPlayer(fakePlayer);
+            minecraftServer.overworld().addNewPlayer((FakePlayer) fakePlayer);
 
-            ClientboundPlayerInfoUpdatePacket cpf = new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER, fakePlayer);
+            ClientboundPlayerInfoUpdatePacket cpf = new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER, (FakePlayer) fakePlayer);
             minecraft.getConnection().handlePlayerInfoUpdate(cpf);
 
             result.forEach(position -> System.out.println(position));
@@ -151,6 +156,38 @@ public class RecordThread implements Runnable {
 
         } catch (ClassNotFoundException e) {
 
+        }
+    }
+    public void changedActor() {
+        state = RecordingState.PLAYING;
+        try {
+            FileInputStream fi = new FileInputStream(dir.getAbsolutePath() + "/" + "loh"
+                    + ".mocap");
+            ObjectInputStream oi = new ObjectInputStream(fi);
+
+            result = new LinkedHashSet<>();
+            try {
+                for (;;) {
+                    result.add((Position) oi.readObject());
+                }
+            } catch (EOFException e) {
+            }
+
+            Minecraft minecraft = Minecraft.getInstance();
+            fakePlayer = new Villager(EntityType.VILLAGER, minecraft.getSingleplayerServer().getPlayerList().getServer().getLevel(Level.OVERWORLD));
+
+            MinecraftServer minecraftServer = minecraft.getSingleplayerServer();
+            Position pos = result.stream().findFirst().get();
+            fakePlayer.setPos(pos.x, pos.y, pos.z);
+            fakePlayer.setXRot(pos.rotX);
+            fakePlayer.setYRot(pos.rotY);
+            fakePlayer.setYHeadRot(pos.rotY);
+            minecraftServer.overworld().addFreshEntity(fakePlayer);
+
+            oi.close();
+            fi.close();
+        } catch (IOException e) {
+        } catch (ClassNotFoundException e) {
         }
     }
     public void changeState(RecordingState newState) {

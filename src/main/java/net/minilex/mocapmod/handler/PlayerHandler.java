@@ -3,6 +3,7 @@ package net.minilex.mocapmod.handler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minilex.mocapmod.state.RecordingState;
 import net.minilex.mocapmod.thread.FakePlayer;
@@ -14,6 +15,7 @@ public class PlayerHandler {
     private RecordThread recordThread;
     private static PlayerHandler instance;
     private Minecraft minecraft;
+    private LivingEntity entity;
 
     public PlayerHandler() {
         minecraft = Minecraft.getInstance();
@@ -27,13 +29,19 @@ public class PlayerHandler {
         } else if (recordThread.getState() == RecordingState.RECORDING) {
             recordThread.changeState(RecordingState.STOP);
         } else if (recordThread.getState() == RecordingState.STOP) {
+            entity = recordThread.fakePlayer;
             recordThread.changeState(RecordingState.PLAYING);
         } else if (recordThread.getState() == RecordingState.PLAYING) {
             recordThread.changeState(RecordingState.IDLE);
         }
     }
+    public void changedActor() {
+        tickCount = 0;
+        if (recordThread.getState() == RecordingState.STOP) {
+            recordThread.changedActor();
+        }
+    }
     public void tick() {
-        //if (recordThread != null) tickCount++;
         if (recordThread.getState() == RecordingState.RECORDING) {
             tickCount++;
             if (tickCount % 25 == 0) {
@@ -42,7 +50,7 @@ public class PlayerHandler {
         }
         if (recordThread.getState() == RecordingState.PLAYING) {
             tickCount++;
-            FakePlayer fakePlayer = recordThread.fakePlayer;
+            LivingEntity fakePlayer = recordThread.fakePlayer;
             if (fakePlayer != null) {
                 if (tickCount % 25 == 0) {
                     Position[] position = recordThread.result.toArray(new Position[recordThread.result.size()]);

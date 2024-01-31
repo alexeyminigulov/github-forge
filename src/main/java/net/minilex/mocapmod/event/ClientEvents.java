@@ -25,6 +25,8 @@ public class ClientEvents {
             }
             if(KeyBiding.CHANGE_ACTOR.consumeClick()) {
                 Minecraft.getInstance().player.sendSystemMessage(Component.literal("Pressed key I "));
+                if (playerHandler == null) playerHandler = PlayerHandler.getInstance();
+                playerHandler.changedActor();
             }
         }
 
