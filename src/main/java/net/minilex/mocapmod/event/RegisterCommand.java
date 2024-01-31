@@ -5,6 +5,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.server.command.ConfigCommand;
 import net.minilex.mocapmod.MocapMod;
+import net.minilex.mocapmod.commands.ClearRecordingCommand;
 import net.minilex.mocapmod.thread.PreLoadParams;
 import net.minilex.mocapmod.thread.RecordThread;
 
@@ -15,5 +16,8 @@ public class RegisterCommand
     public static void registerCommands(RegisterCommandsEvent event)
     {
         PreLoadParams.getInstance().registry(event);
+        new ClearRecordingCommand(event.getDispatcher());
+
+        ConfigCommand.register(event.getDispatcher());
     }
 }
