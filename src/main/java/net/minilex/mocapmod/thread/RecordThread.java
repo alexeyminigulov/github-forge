@@ -27,13 +27,10 @@ public class RecordThread implements Runnable {
     private static RecordThread instance;
     private LocalPlayer player;
     private RecordingState state;
-    //private Boolean lastTickSwipe = false;
     private File dir;
     private FileOutputStream file;
     private String fileName;
     private ObjectOutputStream o;
-    //private int itemsEquipped[] = new int[5];
-    //private List<MocapAction> eventList;
     public LivingEntity fakePlayer;
     public Set<Position> result;
     public int positionIndex = 0;
@@ -42,26 +39,7 @@ public class RecordThread implements Runnable {
         fileName = capname;
         player = _player;
         state = RecordingState.EMPTY;
-        //eventList = MocapMod.getInstance().getActionListForPlayer(player);
         instance = this;
-    }
-
-    public void run() {
-        try {
-            if (state == RecordingState.RECORDING) {
-                trackAndWriteMovement();
-
-                if (player.isDeadOrDying()) {
-                    state = RecordingState.STOP;
-                    MocapMod.getInstance().recordThreads.remove(player);
-                    MocapMod.getInstance().broadcastMsg("Stopped recording "
-                            + player.getDisplayName() + ". RIP.");
-                }
-            }
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
     }
     private Set<Position> readFile() {
         try {
@@ -107,26 +85,14 @@ public class RecordThread implements Runnable {
             e.printStackTrace();
         }
     }
-    public static RecordThread getInstance() {
-        if (instance == null) {
-            RecordThread recordThread = new RecordThread(Minecraft.getInstance().player, "loh");
-        }
-        return instance;
-    }
-    public RecordingState getState() {
-        return state;
-    }
-
     private void stop() {
         try {
-            //o.writeObject(resultForFile);
             file.close();
             o.close();
         } catch (IOException e) {
             System.out.println("Can't close file");
         }
     }
-
     private void read() {
         result = readFile();
 
@@ -153,6 +119,32 @@ public class RecordThread implements Runnable {
         minecraft.getConnection().handlePlayerInfoUpdate(cpf);
 
         result.forEach(position -> System.out.println(position));
+    }
+    public static RecordThread getInstance() {
+        if (instance == null) {
+            RecordThread recordThread = new RecordThread(Minecraft.getInstance().player, "loh");
+        }
+        return instance;
+    }
+    public RecordingState getState() {
+        return state;
+    }
+    public void run() {
+        try {
+            if (state == RecordingState.RECORDING) {
+                trackAndWriteMovement();
+
+                if (player.isDeadOrDying()) {
+                    state = RecordingState.STOP;
+                    this.fakePlayer.remove(Entity.RemovalReason.KILLED);
+                    MocapMod.getInstance().broadcastMsg("Stopped recording "
+                            + player.getDisplayName() + ". RIP.");
+                }
+            }
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
     public void changedActor() {
         state = RecordingState.PLAYING;
