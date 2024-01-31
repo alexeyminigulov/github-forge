@@ -23,7 +23,7 @@ public class PlayerHandler {
     }
     public void handle() {
         tickCount = 0;
-        if (recordThread.getState() == RecordingState.IDLE) {
+        if (recordThread.getState() == RecordingState.EMPTY) {
             minecraft.player.sendSystemMessage(Component.literal("Pressed a Key!!! "));
             recordThread.changeState(RecordingState.RECORDING);
         } else if (recordThread.getState() == RecordingState.RECORDING) {
@@ -32,7 +32,7 @@ public class PlayerHandler {
             entity = recordThread.fakePlayer;
             recordThread.changeState(RecordingState.PLAYING);
         } else if (recordThread.getState() == RecordingState.PLAYING) {
-            recordThread.changeState(RecordingState.IDLE);
+            recordThread.changeState(RecordingState.STOP);
         }
     }
     public void changedActor() {

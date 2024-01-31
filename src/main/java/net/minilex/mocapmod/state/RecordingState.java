@@ -1,7 +1,7 @@
 package net.minilex.mocapmod.state;
 
 public enum RecordingState {
-    IDLE,
+    EMPTY,
     RECORDING,
     PLAYING,
     STOP

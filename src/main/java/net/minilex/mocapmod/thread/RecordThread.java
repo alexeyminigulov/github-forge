@@ -42,7 +42,7 @@ public class RecordThread implements Runnable {
     public RecordThread(LocalPlayer _player, String capname) {
         fileName = capname;
         player = _player;
-        state = RecordingState.IDLE;
+        state = RecordingState.EMPTY;
         //eventList = MocapMod.getInstance().getActionListForPlayer(player);
         instance = this;
     }
@@ -191,7 +191,7 @@ public class RecordThread implements Runnable {
         }
     }
     public void changeState(RecordingState newState) {
-        if (state == RecordingState.IDLE && newState == RecordingState.RECORDING) {
+        if (state == RecordingState.EMPTY && newState == RecordingState.RECORDING) {
             state = newState;
             initFile(fileName);
             System.out.println("State is RECORDING");
@@ -204,7 +204,7 @@ public class RecordThread implements Runnable {
             state = newState;
             this.read();
             System.out.println("State is PLAYING");
-        } else if (state == RecordingState.PLAYING && newState == RecordingState.IDLE) {
+        } else if (state == RecordingState.PLAYING && newState == RecordingState.STOP) {
             state = newState;
             this.fakePlayer.remove(Entity.RemovalReason.KILLED);
             this.positionIndex = 0;
