@@ -10,7 +10,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -188,7 +187,15 @@ public class RecordThread implements Runnable {
             state = newState;
             this.fakePlayer.remove(Entity.RemovalReason.KILLED);
             this.positionIndex = 0;
-            System.out.println("State is IDLE and Remove fake");
+            System.out.println("State is STOP and Remove fake");
+        } else if (newState == RecordingState.EMPTY) {
+            if (state == RecordingState.PLAYING) {
+                this.fakePlayer.remove(Entity.RemovalReason.KILLED);
+            } else if (state == RecordingState.RECORDING) {
+                this.stop();
+            }
+            state = newState;
+            this.positionIndex = 0;
         }
     }
 }
