@@ -64,7 +64,27 @@ public class RecordThread implements Runnable {
             e.printStackTrace();
         }
     }
+    private Set<Position> readFile() {
+        try {
+            FileInputStream fi = new FileInputStream(dir.getAbsolutePath() + "/" + "loh"
+                    + ".mocap");
+            ObjectInputStream oi = new ObjectInputStream(fi);
 
+            result = new LinkedHashSet<>();
+            try {
+                for (;;) {
+                    result.add((Position) oi.readObject());
+                }
+            } catch (EOFException e) {
+                // End of stream
+            }
+            oi.close();
+            fi.close();
+        } catch (IOException e) {
+        } catch (ClassNotFoundException e) {
+        }
+        return result;
+    }
     private void trackAndWriteMovement() throws IOException {
         Vec3 entityPos = player.position();
         Vec2 entityRot = player.getRotationVector();
@@ -109,86 +129,46 @@ public class RecordThread implements Runnable {
     }
 
     private void read() {
-        try {
-            FileInputStream fi = new FileInputStream(dir.getAbsolutePath() + "/" + "loh"
-                    + ".mocap");
-            ObjectInputStream oi = new ObjectInputStream(fi);
+        result = readFile();
 
-            result = new LinkedHashSet<>();
-            try {
-                for (;;) {
-                    result.add((Position) oi.readObject());
-                }
-            } catch (EOFException e) {
-                // End of stream
-            }
-            /*List<Position> resultList = result.stream()
-                    .sorted(Comparator.comparing(Position::getRowId))
-                    .collect(Collectors.toList());*/
+        UUID id = UUID.randomUUID();
+        GameProfile profile = new GameProfile(id, "Sasha");
+        Minecraft minecraft = Minecraft.getInstance();
 
-            UUID id = UUID.randomUUID();
-            GameProfile profile = new GameProfile(id, "Sasha");
-            Minecraft minecraft = Minecraft.getInstance();
+        Property property = new Property("textures", "ewogICJ0aW1lc3RhbXAiIDogMTcwNjYxNzI2NTg5NiwKICAicHJvZmlsZUlkIiA6ICIwMDM4Y2RkYTcyNjU0MjE1YjdkNWZlNmNmYWZhZmM1ZSIsCiAgInByb2ZpbGVOYW1lIiA6ICJBR0E3T04iLAogICJzaWduYXR1cmVSZXF1aXJlZCIgOiB0cnVlLAogICJ0ZXh0dXJlcyIgOiB7CiAgICAiU0tJTiIgOiB7CiAgICAgICJ1cmwiIDogImh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZjIzYWVlOTk4MTc2Y2IxODMyYWNkMDhhN2E3NmIzOGMwZTk1ZTE0ZDU1YTUyMzU3M2IzYjIyOTIxYjUxYTg0ZSIKICAgIH0KICB9Cn0=", "IZvihWxWwpm6IiMjSi7L7LKQvxnkJXRqNGvsL5xL0UDJCerl5NMip9cHI+eUfiE3aJ31kHDv0SCkwd2AI8g3gHqeDV1okRzoS7x3uPE5q1ykMpkmZEsLVuqrdv2+JKH/NySoypFFrX+E+dV5Y7SIyNZ6h44L6ETHhJ1asI+RaeXXpxtfBqt6Am+eiiFKKN0p/ZiqUcwmQT3/D4GnKvGGZa20O8EYCihd5rAI51Kxil3E16AhC4zSfyyMSzZiElq66vaTrz0TU/c3HgAawYahv6VFWYzYVq07ajBSj2EVikbGaOQQGj8gUqFUAmRMoXyNa+0zQ52ShCHdkLdB1ruF1/yVvv/QmLltnc8q15BmLJiNPCWKt1X4nkLoyT5AOM6ostvM4uGptkoz/o1haFagJaa9q7dcYIOcEljZq3tFbH+h4He2pLVDJf5hJrkt4UOz29iPdRLvSpIPMHVN9tKLxSGXFqOVTgvjwhPc0LnWCepOlReWfHhsSbU7CLYHdAsLTVuFMc8Khx5ZKFjHZVwNjvU9iCWxOpsMck47p4SZ7DAu3V968YWrcZXTs1MBK91tdkDww7KezKaZaAVRlT0ltmiWmd8I35RxMpFK7XvuG8ASY83H+O9lHgEjlzUteB+YtyGmmOH6oQmc3hibjxYvQjUYcdsfBs/vKC8axUElUgI=");
+        profile.getProperties().put("textures", property);
 
-            Property property = new Property("textures", "ewogICJ0aW1lc3RhbXAiIDogMTcwNjYxNzI2NTg5NiwKICAicHJvZmlsZUlkIiA6ICIwMDM4Y2RkYTcyNjU0MjE1YjdkNWZlNmNmYWZhZmM1ZSIsCiAgInByb2ZpbGVOYW1lIiA6ICJBR0E3T04iLAogICJzaWduYXR1cmVSZXF1aXJlZCIgOiB0cnVlLAogICJ0ZXh0dXJlcyIgOiB7CiAgICAiU0tJTiIgOiB7CiAgICAgICJ1cmwiIDogImh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZjIzYWVlOTk4MTc2Y2IxODMyYWNkMDhhN2E3NmIzOGMwZTk1ZTE0ZDU1YTUyMzU3M2IzYjIyOTIxYjUxYTg0ZSIKICAgIH0KICB9Cn0=", "IZvihWxWwpm6IiMjSi7L7LKQvxnkJXRqNGvsL5xL0UDJCerl5NMip9cHI+eUfiE3aJ31kHDv0SCkwd2AI8g3gHqeDV1okRzoS7x3uPE5q1ykMpkmZEsLVuqrdv2+JKH/NySoypFFrX+E+dV5Y7SIyNZ6h44L6ETHhJ1asI+RaeXXpxtfBqt6Am+eiiFKKN0p/ZiqUcwmQT3/D4GnKvGGZa20O8EYCihd5rAI51Kxil3E16AhC4zSfyyMSzZiElq66vaTrz0TU/c3HgAawYahv6VFWYzYVq07ajBSj2EVikbGaOQQGj8gUqFUAmRMoXyNa+0zQ52ShCHdkLdB1ruF1/yVvv/QmLltnc8q15BmLJiNPCWKt1X4nkLoyT5AOM6ostvM4uGptkoz/o1haFagJaa9q7dcYIOcEljZq3tFbH+h4He2pLVDJf5hJrkt4UOz29iPdRLvSpIPMHVN9tKLxSGXFqOVTgvjwhPc0LnWCepOlReWfHhsSbU7CLYHdAsLTVuFMc8Khx5ZKFjHZVwNjvU9iCWxOpsMck47p4SZ7DAu3V968YWrcZXTs1MBK91tdkDww7KezKaZaAVRlT0ltmiWmd8I35RxMpFK7XvuG8ASY83H+O9lHgEjlzUteB+YtyGmmOH6oQmc3hibjxYvQjUYcdsfBs/vKC8axUElUgI=");
-            profile.getProperties().put("textures", property);
-            
-            fakePlayer = new FakePlayer(minecraft.getSingleplayerServer(),
-                    minecraft.getSingleplayerServer().getPlayerList().getServer().getLevel(Level.OVERWORLD),
-                    profile);
+        fakePlayer = new FakePlayer(minecraft.getSingleplayerServer(),
+                minecraft.getSingleplayerServer().getPlayerList().getServer().getLevel(Level.OVERWORLD),
+                profile);
 
-            MinecraftServer minecraftServer = Minecraft.getInstance().getSingleplayerServer();
-            Position pos = result.stream().findFirst().get();
-            fakePlayer.setPos(pos.x, pos.y, pos.z);
-            fakePlayer.setXRot(pos.rotX);
-            fakePlayer.setYRot(pos.rotY);
-            fakePlayer.setYHeadRot(pos.rotY);
-            minecraftServer.overworld().addNewPlayer((FakePlayer) fakePlayer);
+        MinecraftServer minecraftServer = Minecraft.getInstance().getSingleplayerServer();
+        Position pos = result.stream().findFirst().get();
+        fakePlayer.setPos(pos.x, pos.y, pos.z);
+        fakePlayer.setXRot(pos.rotX);
+        fakePlayer.setYRot(pos.rotY);
+        fakePlayer.setYHeadRot(pos.rotY);
+        minecraftServer.overworld().addNewPlayer((FakePlayer) fakePlayer);
 
-            ClientboundPlayerInfoUpdatePacket cpf = new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER, (FakePlayer) fakePlayer);
-            minecraft.getConnection().handlePlayerInfoUpdate(cpf);
+        ClientboundPlayerInfoUpdatePacket cpf = new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER, (FakePlayer) fakePlayer);
+        minecraft.getConnection().handlePlayerInfoUpdate(cpf);
 
-            result.forEach(position -> System.out.println(position));
-
-            oi.close();
-            fi.close();
-        } catch (IOException e) {
-
-        } catch (ClassNotFoundException e) {
-
-        }
+        result.forEach(position -> System.out.println(position));
     }
     public void changedActor() {
         state = RecordingState.PLAYING;
-        try {
-            FileInputStream fi = new FileInputStream(dir.getAbsolutePath() + "/" + "loh"
-                    + ".mocap");
-            ObjectInputStream oi = new ObjectInputStream(fi);
+        result = readFile();
 
-            result = new LinkedHashSet<>();
-            try {
-                for (;;) {
-                    result.add((Position) oi.readObject());
-                }
-            } catch (EOFException e) {
-            }
+        Minecraft minecraft = Minecraft.getInstance();
+        fakePlayer = new Villager(EntityType.VILLAGER, minecraft.getSingleplayerServer().getPlayerList().getServer().getLevel(Level.OVERWORLD));
 
-            Minecraft minecraft = Minecraft.getInstance();
-            fakePlayer = new Villager(EntityType.VILLAGER, minecraft.getSingleplayerServer().getPlayerList().getServer().getLevel(Level.OVERWORLD));
-
-            MinecraftServer minecraftServer = minecraft.getSingleplayerServer();
-            Position pos = result.stream().findFirst().get();
-            fakePlayer.setPos(pos.x, pos.y, pos.z);
-            fakePlayer.setXRot(pos.rotX);
-            fakePlayer.setYRot(pos.rotY);
-            fakePlayer.setYHeadRot(pos.rotY);
-            minecraftServer.overworld().addFreshEntity(fakePlayer);
-
-            oi.close();
-            fi.close();
-        } catch (IOException e) {
-        } catch (ClassNotFoundException e) {
-        }
+        MinecraftServer minecraftServer = minecraft.getSingleplayerServer();
+        Position pos = result.stream().findFirst().get();
+        fakePlayer.setPos(pos.x, pos.y, pos.z);
+        fakePlayer.setXRot(pos.rotX);
+        fakePlayer.setYRot(pos.rotY);
+        fakePlayer.setYHeadRot(pos.rotY);
+        minecraftServer.overworld().addFreshEntity(fakePlayer);
     }
     public void changeState(RecordingState newState) {
         if (state == RecordingState.EMPTY && newState == RecordingState.RECORDING) {
