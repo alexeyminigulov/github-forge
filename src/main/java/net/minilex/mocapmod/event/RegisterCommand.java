@@ -5,9 +5,9 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.server.command.ConfigCommand;
 import net.minilex.mocapmod.MocapMod;
+import net.minilex.mocapmod.commands.ChangeActorTypeCommand;
 import net.minilex.mocapmod.commands.ClearRecordingCommand;
 import net.minilex.mocapmod.thread.PreLoadParams;
-import net.minilex.mocapmod.thread.RecordThread;
 
 @Mod.EventBusSubscriber(modid = MocapMod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class RegisterCommand
@@ -17,6 +17,7 @@ public class RegisterCommand
     {
         PreLoadParams.getInstance().registry(event);
         new ClearRecordingCommand(event.getDispatcher());
+        new ChangeActorTypeCommand(event.getDispatcher());
 
         ConfigCommand.register(event.getDispatcher());
     }

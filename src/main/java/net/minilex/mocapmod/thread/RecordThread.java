@@ -13,6 +13,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.animal.Fox;
+import net.minecraft.world.entity.animal.Rabbit;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.level.Level;
@@ -20,6 +22,7 @@ import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minilex.mocapmod.MocapMod;
+import net.minilex.mocapmod.state.ActorType;
 import net.minilex.mocapmod.state.RecordingState;
 
 public class RecordThread implements Runnable {
@@ -32,6 +35,7 @@ public class RecordThread implements Runnable {
     private String fileName;
     private ObjectOutputStream o;
     public LivingEntity fakePlayer;
+    private ActorType playerType;
     public Set<Position> result;
     public int positionIndex = 0;
 
@@ -40,6 +44,7 @@ public class RecordThread implements Runnable {
         player = _player;
         state = RecordingState.EMPTY;
         instance = this;
+        playerType = ActorType.VILLAGER;
     }
     private Set<Position> readFile() {
         try {
@@ -126,6 +131,9 @@ public class RecordThread implements Runnable {
         }
         return instance;
     }
+    public void changeActorType(ActorType type) {
+        this.playerType = type;
+    }
     public RecordingState getState() {
         return state;
     }
@@ -151,7 +159,13 @@ public class RecordThread implements Runnable {
         result = readFile();
 
         Minecraft minecraft = Minecraft.getInstance();
-        fakePlayer = new Villager(EntityType.VILLAGER, minecraft.getSingleplayerServer().getPlayerList().getServer().getLevel(Level.OVERWORLD));
+        if (playerType == ActorType.VILLAGER) fakePlayer = new Villager(EntityType.VILLAGER, minecraft.getSingleplayerServer().getPlayerList().getServer().getLevel(Level.OVERWORLD));
+        if (playerType == ActorType.ZOMBIE) fakePlayer = new Zombie(EntityType.ZOMBIE, minecraft.getSingleplayerServer().getPlayerList().getServer().getLevel(Level.OVERWORLD));
+        if (playerType == ActorType.FOX) fakePlayer = new Fox(EntityType.FOX, minecraft.getSingleplayerServer().getPlayerList().getServer().getLevel(Level.OVERWORLD));
+        if (playerType == ActorType.RABBIT) {
+            fakePlayer = new Rabbit(EntityType.RABBIT, minecraft.getSingleplayerServer().getPlayerList().getServer().getLevel(Level.OVERWORLD));
+            ((Rabbit) fakePlayer).startJumping();
+        }
 
         MinecraftServer minecraftServer = minecraft.getSingleplayerServer();
         Position pos = result.stream().findFirst().get();
