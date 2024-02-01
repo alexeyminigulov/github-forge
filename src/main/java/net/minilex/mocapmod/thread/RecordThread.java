@@ -10,15 +10,18 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.Fox;
 import net.minecraft.world.entity.animal.Rabbit;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.LevelResource;
@@ -121,6 +124,9 @@ public class RecordThread implements Runnable {
         fakePlayer.setXRot(pos.rotX);
         fakePlayer.setYRot(pos.rotY);
         fakePlayer.setYHeadRot(pos.rotY);
+        ResourceLocation resource = ResourceLocation.tryParse("golden_boots");
+        Item item = BuiltInRegistries.ITEM.get(resource);
+        ((FakePlayer) fakePlayer).setItemSlot(EquipmentSlot.FEET, new ItemStack(item));
         ((FakePlayer) fakePlayer).setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(BuiltInRegistries.ITEM.byId(796)));
         minecraftServer.overworld().addNewPlayer((FakePlayer) fakePlayer);
 
