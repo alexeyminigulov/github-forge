@@ -2,11 +2,9 @@ package net.minilex.mocapmod.handler;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.level.storage.LevelResource;
+import net.minilex.mocapmod.state.BuildBlock;
 import net.minilex.mocapmod.state.RecordingState;
-import net.minilex.mocapmod.thread.FakePlayer;
 import net.minilex.mocapmod.thread.Position;
 import net.minilex.mocapmod.thread.RecordThread;
 
@@ -36,8 +34,8 @@ public class PlayerHandler {
         }
     }
     public void changedActor() {
-        tickCount = 0;
         if (recordThread.getState() == RecordingState.STOP) {
+            tickCount = 0;
             recordThread.changedActor();
         }
     }
@@ -61,12 +59,23 @@ public class PlayerHandler {
                     fakePlayer.setXRot(position[recordThread.positionIndex].rotX);
                     fakePlayer.setYRot(position[recordThread.positionIndex].rotY);
                     fakePlayer.setYHeadRot(position[recordThread.positionIndex].rotY);
+                    if (position[recordThread.positionIndex].buildBlock != null) {
+                        if (position[recordThread.positionIndex].buildBlock.getAction() == BuildBlock.Action.PLACE)
+                            position[recordThread.positionIndex].buildBlock.placeBlock();
+                        else position[recordThread.positionIndex].buildBlock.breakBlock();
+                    }
                     System.out.println(position[recordThread.positionIndex].toString());
                     recordThread.positionIndex++;
-                    if(recordThread.positionIndex == position.length) recordThread.positionIndex = 0;
+                    if(recordThread.positionIndex == position.length) {
+                        recordThread.positionIndex = 0;
+                        recordThread.clearMap();
+                    }
                 }
             }
         }
+    }
+    public RecordThread getRecordThread() {
+        return recordThread;
     }
     public static PlayerHandler getInstance() {
         if (instance == null) {

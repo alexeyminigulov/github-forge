@@ -29,6 +29,7 @@ import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minilex.mocapmod.MocapMod;
 import net.minilex.mocapmod.state.ActorType;
+import net.minilex.mocapmod.state.BuildBlock;
 import net.minilex.mocapmod.state.RecordingState;
 
 public class RecordThread implements Runnable {
@@ -41,6 +42,7 @@ public class RecordThread implements Runnable {
     private String fileName;
     private ObjectOutputStream o;
     public LivingEntity fakePlayer;
+    public BuildBlock buildBlock;
     private ActorType playerType;
     public Set<Position> result;
     public int positionIndex = 0;
@@ -77,6 +79,10 @@ public class RecordThread implements Runnable {
         Vec3 entityPos = player.position();
         Vec2 entityRot = player.getRotationVector();
         Position pos = new Position(entityPos.x, entityPos.y, entityPos.z, entityRot.x, entityRot.y);
+        if (buildBlock != null) {
+            pos.buildBlock = buildBlock;
+            buildBlock = null;
+        }
         System.out.println("Recording postion is " + pos);
         o.writeObject(pos);
     }
@@ -134,6 +140,17 @@ public class RecordThread implements Runnable {
         minecraft.getConnection().handlePlayerInfoUpdate(cpf);
 
         result.forEach(position -> System.out.println(position));
+    }
+    public void clearMap() {
+        if (result == null) result = readFile();
+        List<Position> list = new ArrayList<>(result);
+        Collections.reverse(list);
+        list.forEach(position -> {
+            if (position.buildBlock != null) {
+                if (position.buildBlock.getAction() == BuildBlock.Action.BREAK) position.buildBlock.placeBlock();
+                else position.buildBlock.breakBlock();
+            }
+        });
     }
     public static RecordThread getInstance() {
         if (instance == null) {
@@ -194,6 +211,7 @@ public class RecordThread implements Runnable {
             Minecraft.getInstance().player.sendSystemMessage(Component.literal("The End!!!  "));
             state = newState;
             this.stop();
+            this.clearMap();
             System.out.println("State is STOP");
         } else if (state == RecordingState.STOP && newState == RecordingState.PLAYING) {
             state = newState;
@@ -203,6 +221,7 @@ public class RecordThread implements Runnable {
             state = newState;
             this.fakePlayer.remove(Entity.RemovalReason.KILLED);
             this.positionIndex = 0;
+            this.clearMap();
             System.out.println("State is STOP and Remove fake");
         } else if (newState == RecordingState.EMPTY) {
             if (state == RecordingState.PLAYING) {

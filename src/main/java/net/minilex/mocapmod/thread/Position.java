@@ -1,5 +1,7 @@
 package net.minilex.mocapmod.thread;
 
+import net.minilex.mocapmod.state.BuildBlock;
+
 import java.io.Serial;
 import java.io.Serializable;
 
@@ -11,6 +13,7 @@ public class Position implements Serializable {
     public double z;
     public float rotX;
     public float rotY;
+    public BuildBlock buildBlock;
     public Position(double xx, double yy, double zz, float rotXX, float rotYY) {
         x = xx;
         y = yy;
@@ -20,6 +23,6 @@ public class Position implements Serializable {
     }
     @Override
     public String toString() {
-        return "X:" + x + "\nY: " + y + "\nZ: " + z + "\nrotX: " + rotX + "\nrotY: " + rotY;
+        return "X:" + x + "\nY: " + y + "\nZ: " + z + "\nrotX: " + rotX + "\nrotY: " + rotY + "\n" + buildBlock;
     }
 }
