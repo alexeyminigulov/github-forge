@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "package": "net.minilex.mocapmod.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins":
+  [
+    "EntityMixin",
+    "LivingEntityMixin"
+  ],
+  "client":
+  [
+  ],
+  "injectors": { "defaultRequire": 1 },
+  "refmap": "mixins.mocapmod.refmap.json"
+}

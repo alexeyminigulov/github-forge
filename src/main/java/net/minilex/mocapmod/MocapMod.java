@@ -25,6 +25,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import net.minilex.mocapmod.entity.ModEntities;
 import net.minilex.mocapmod.entity.client.VillagerTwoRenderer;
+import net.minilex.mocapmod.particle.ModParticles;
 import org.slf4j.Logger;
 
 // The value here should match an entry in the META-INF/mods.toml file
@@ -60,6 +61,7 @@ public class MocapMod
         ITEMS.register(modEventBus);
 
         ModEntities.register(modEventBus);
+        ModParticles.register(modEventBus);
 
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);

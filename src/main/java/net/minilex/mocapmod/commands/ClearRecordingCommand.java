@@ -18,6 +18,10 @@ public class ClearRecordingCommand {
     private int clearRecord(CommandSourceStack source) throws CommandSyntaxException {
         if (recordThread == null) recordThread = RecordThread.getInstance();
         recordThread.changeState(RecordingState.EMPTY);
+        /*Player player = Minecraft.getInstance().player;
+        Minecraft.getInstance().level.addParticle(ModParticles.CITRINE_PARTICLES.get(),
+                player.position().x, player.position().y + 2.5d, player.position().z,
+                0, 0.001d, 0);*/
         return 1;
     }
 }
