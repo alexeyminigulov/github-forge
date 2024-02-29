@@ -2,9 +2,11 @@ package net.minilex.mocapmod.handler;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundRotateHeadPacket;
 import net.minecraft.world.entity.LivingEntity;
 import net.minilex.mocapmod.state.BuildBlock;
 import net.minilex.mocapmod.state.RecordingState;
+import net.minilex.mocapmod.thread.FakePlayer;
 import net.minilex.mocapmod.thread.Position;
 import net.minilex.mocapmod.thread.RecordThread;
 
@@ -58,7 +60,8 @@ public class PlayerHandler {
                             position[recordThread.positionIndex].z);
                     fakePlayer.setXRot(position[recordThread.positionIndex].rotX);
                     fakePlayer.setYRot(position[recordThread.positionIndex].rotY);
-                    fakePlayer.setYHeadRot(position[recordThread.positionIndex].rotY);
+                    fakePlayer.setYBodyRot(position[recordThread.positionIndex].yBodyRot);
+                    fakePlayer.setYHeadRot(position[recordThread.positionIndex].yHeadRot);
                     if (position[recordThread.positionIndex].buildBlock != null) {
                         if (position[recordThread.positionIndex].buildBlock.getAction() == BuildBlock.Action.PLACE)
                             position[recordThread.positionIndex].buildBlock.placeBlock();

@@ -7,9 +7,11 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
+import net.minecraft.network.protocol.game.ClientboundRotateHeadPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.InteractionHand;
@@ -78,7 +80,8 @@ public class RecordThread implements Runnable {
     private void trackAndWriteMovement() throws IOException {
         Vec3 entityPos = player.position();
         Vec2 entityRot = player.getRotationVector();
-        Position pos = new Position(entityPos.x, entityPos.y, entityPos.z, entityRot.x, entityRot.y);
+        Position pos = new Position(entityPos.x, entityPos.y, entityPos.z,
+                entityRot.x, entityRot.y, player.getVisualRotationYInDegrees(), player.yHeadRot);
         if (buildBlock != null) {
             pos.buildBlock = buildBlock;
             buildBlock = null;
@@ -129,7 +132,9 @@ public class RecordThread implements Runnable {
         fakePlayer.setPos(pos.x, pos.y, pos.z);
         fakePlayer.setXRot(pos.rotX);
         fakePlayer.setYRot(pos.rotY);
-        fakePlayer.setYHeadRot(pos.rotY);
+        fakePlayer.setYBodyRot(pos.yBodyRot);
+        fakePlayer.setYHeadRot(pos.yHeadRot);
+        fakePlayer.lookAt(EntityAnchorArgument.Anchor.EYES, Vec3.ZERO);
         ResourceLocation resource = ResourceLocation.tryParse("golden_boots");
         Item item = BuiltInRegistries.ITEM.get(resource);
         ((FakePlayer) fakePlayer).setItemSlot(EquipmentSlot.FEET, new ItemStack(item));
@@ -199,7 +204,8 @@ public class RecordThread implements Runnable {
         fakePlayer.setPos(pos.x, pos.y, pos.z);
         fakePlayer.setXRot(pos.rotX);
         fakePlayer.setYRot(pos.rotY);
-        fakePlayer.setYHeadRot(pos.rotY);
+        fakePlayer.setYBodyRot(pos.yBodyRot);
+        fakePlayer.setYHeadRot(pos.yHeadRot);
         minecraftServer.overworld().addFreshEntity(fakePlayer);
     }
     public void changeState(RecordingState newState) {

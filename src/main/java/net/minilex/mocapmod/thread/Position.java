@@ -13,13 +13,17 @@ public class Position implements Serializable {
     public double z;
     public float rotX;
     public float rotY;
+    public float yBodyRot;
+    public float yHeadRot;
     public BuildBlock buildBlock;
-    public Position(double xx, double yy, double zz, float rotXX, float rotYY) {
+    public Position(double xx, double yy, double zz, float rotXX, float rotYY, float yyBodyRot, float yyHeadRot) {
         x = xx;
         y = yy;
         z = zz;
         rotX = rotXX;
         rotY = rotYY;
+        yBodyRot = yyBodyRot;
+        yHeadRot = yyHeadRot;
     }
     @Override
     public String toString() {
