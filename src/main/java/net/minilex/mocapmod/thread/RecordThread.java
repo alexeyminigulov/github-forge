@@ -121,6 +121,7 @@ public class RecordThread implements Runnable {
         if (equippedItem != null) {
             pos.addEquippedItem(equippedItem);
         }
+        if (player.swinging && player.swingTime == 0) pos.swinging = true;
 
         o.writeObject(pos);
     }

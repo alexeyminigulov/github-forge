@@ -18,6 +18,7 @@ public class Position implements Serializable {
     public float rotY;
     public float yBodyRot;
     public float yHeadRot;
+    public boolean swinging = false;
     public BuildBlock buildBlock;
     private List<EquippedItem> equippedItem = null;
     public Position(double xx, double yy, double zz, float rotXX, float rotYY, float yyBodyRot, float yyHeadRot) {

@@ -3,6 +3,7 @@ package net.minilex.mocapmod.handler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundRotateHeadPacket;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minilex.mocapmod.mixin.LivingEntityMixin;
 import net.minilex.mocapmod.state.BuildBlock;
@@ -65,6 +66,7 @@ public class PlayerHandler {
                     fakePlayer.setYHeadRot(position[recordThread.positionIndex].yHeadRot);
                     recordThread.setLoot(position[recordThread.positionIndex]);
                     ((LivingEntityMixin)fakePlayer).callDetectEquipmentUpdates();
+                    if (position[recordThread.positionIndex].swinging) fakePlayer.swing(InteractionHand.MAIN_HAND);
                     if (position[recordThread.positionIndex].buildBlock != null) {
                         if (position[recordThread.positionIndex].buildBlock.getAction() == BuildBlock.Action.PLACE)
                             position[recordThread.positionIndex].buildBlock.placeBlock();
