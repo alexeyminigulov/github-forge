@@ -34,10 +34,10 @@ public class ClientEvents {
         @SubscribeEvent
         public static void onKeyInput(InputEvent.Key event) {
             if(KeyBiding.DRINKING_KEY.consumeClick()) {
-                if (fire) {
+                /*if (fire) {
                     EntityData.LIVING_ENTITY_FLAGS.set(playerHandler.getRecordThread().fakePlayer, (byte)1);
                     return;
-                }
+                }*/
 
                 if (playerHandler == null) playerHandler = PlayerHandler.getInstance();
                 playerHandler.handle();
@@ -67,7 +67,7 @@ public class ClientEvents {
         public static void onTick(TickEvent tick) {
             if (playerHandler != null)  playerHandler.tick();
 
-            if (fire) {
+            /*if (fire) {
                 f += 0.01f;
                 if (f > 40.0f) {
                     FakePlayer fakePlayer = (FakePlayer)playerHandler.getRecordThread().fakePlayer;
@@ -79,7 +79,7 @@ public class ClientEvents {
                     f = 0;
                     fakePlayer.getAbilities().instabuild = false;
                 }
-            }
+            }*/
         }
 
         @SubscribeEvent

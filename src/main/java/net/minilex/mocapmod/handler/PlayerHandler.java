@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundRotateHeadPacket;
 import net.minecraft.world.entity.LivingEntity;
+import net.minilex.mocapmod.mixin.LivingEntityMixin;
 import net.minilex.mocapmod.state.BuildBlock;
 import net.minilex.mocapmod.state.RecordingState;
 import net.minilex.mocapmod.thread.FakePlayer;
@@ -62,12 +63,13 @@ public class PlayerHandler {
                     fakePlayer.setYRot(position[recordThread.positionIndex].rotY);
                     fakePlayer.setYBodyRot(position[recordThread.positionIndex].yBodyRot);
                     fakePlayer.setYHeadRot(position[recordThread.positionIndex].yHeadRot);
+                    recordThread.setLoot(position[recordThread.positionIndex]);
+                    ((LivingEntityMixin)fakePlayer).callDetectEquipmentUpdates();
                     if (position[recordThread.positionIndex].buildBlock != null) {
                         if (position[recordThread.positionIndex].buildBlock.getAction() == BuildBlock.Action.PLACE)
                             position[recordThread.positionIndex].buildBlock.placeBlock();
                         else position[recordThread.positionIndex].buildBlock.breakBlock();
                     }
-                    System.out.println(position[recordThread.positionIndex].toString());
                     recordThread.positionIndex++;
                     if(recordThread.positionIndex == position.length) {
                         recordThread.positionIndex = 0;

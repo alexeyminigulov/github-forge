@@ -1,6 +1,7 @@
 package net.minilex.mocapmod.thread;
 
 import java.io.*;
+import java.lang.reflect.Field;
 import java.util.*;
 
 import com.mojang.authlib.GameProfile;
@@ -30,9 +31,7 @@ import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minilex.mocapmod.MocapMod;
-import net.minilex.mocapmod.state.ActorType;
-import net.minilex.mocapmod.state.BuildBlock;
-import net.minilex.mocapmod.state.RecordingState;
+import net.minilex.mocapmod.state.*;
 
 public class RecordThread implements Runnable {
 
@@ -47,6 +46,8 @@ public class RecordThread implements Runnable {
     public BuildBlock buildBlock;
     private ActorType playerType;
     public Set<Position> result;
+    private boolean isLootSet = true;
+    private StatusInventory statusInventory;
     public int positionIndex = 0;
 
     public RecordThread(LocalPlayer _player, String capname) {
@@ -86,7 +87,41 @@ public class RecordThread implements Runnable {
             pos.buildBlock = buildBlock;
             buildBlock = null;
         }
-        System.out.println("Recording postion is " + pos);
+        if (isLootSet) {
+            player.getInventory().armor.forEach((ItemStack is) -> {
+                int index = player.getInventory().armor.indexOf(is);
+                EquipmentSlot slot = switch (index) {
+                    case 0 -> EquipmentSlot.FEET;
+                    case 1 -> EquipmentSlot.LEGS;
+                    case 2 -> EquipmentSlot.CHEST;
+                    case 3 -> EquipmentSlot.HEAD;
+                    default -> null;
+                };
+                EquippedItem item = new EquippedItem(Item.getId(is.getItem()), slot.getFilterFlag());
+                pos.addEquippedItem(item);
+            });
+
+            Item offhand = ((ItemStack)player.getInventory().offhand.toArray()[0]).getItem();
+            pos.addEquippedItem(new EquippedItem(Item.getId(offhand), EquipmentSlot.OFFHAND.getFilterFlag()));
+
+            try {
+                Field nameField = player.getClass().getSuperclass().getSuperclass().getDeclaredField("lastItemInMainHand");
+                nameField.setAccessible(true);
+                Item itemMainHand = ((ItemStack)nameField.get(player)).getItem();
+                pos.addEquippedItem(new EquippedItem(Item.getId(itemMainHand), EquipmentSlot.MAINHAND.getFilterFlag()));
+            } catch (Exception e) {
+
+            }
+            statusInventory = new StatusInventory(player.getMainHandItem(), ((ItemStack)player.getInventory().offhand.toArray()[0]), player.getInventory().armor);
+
+            isLootSet = false;
+        }
+        statusInventory.tickUpdate(player.getMainHandItem(), ((ItemStack)player.getInventory().offhand.toArray()[0]), player.getInventory().armor);
+        EquippedItem equippedItem = statusInventory.getUpdatedItem();
+        if (equippedItem != null) {
+            pos.addEquippedItem(equippedItem);
+        }
+
         o.writeObject(pos);
     }
     private void initFile(String capname) {
@@ -135,16 +170,18 @@ public class RecordThread implements Runnable {
         fakePlayer.setYBodyRot(pos.yBodyRot);
         fakePlayer.setYHeadRot(pos.yHeadRot);
         fakePlayer.lookAt(EntityAnchorArgument.Anchor.EYES, Vec3.ZERO);
-        ResourceLocation resource = ResourceLocation.tryParse("golden_boots");
-        Item item = BuiltInRegistries.ITEM.get(resource);
-        ((FakePlayer) fakePlayer).setItemSlot(EquipmentSlot.FEET, new ItemStack(item));
-        ((FakePlayer) fakePlayer).setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(BuiltInRegistries.ITEM.byId(796)));
+        setLoot(pos);
         minecraftServer.overworld().addNewPlayer((FakePlayer) fakePlayer);
 
         ClientboundPlayerInfoUpdatePacket cpf = new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER, (FakePlayer) fakePlayer);
         minecraft.getConnection().handlePlayerInfoUpdate(cpf);
-
-        result.forEach(position -> System.out.println(position));
+    }
+    public void setLoot(Position pos) {
+        List<EquippedItem> equippedItems = pos.getEquippedItem();
+        if (equippedItems == null) return;
+        equippedItems.forEach((EquippedItem eq) -> {
+            ((FakePlayer) fakePlayer).setItemSlot(eq.getSlot(), new ItemStack(eq.getItem()));
+        });
     }
     public void clearMap() {
         if (result == null) result = readFile();

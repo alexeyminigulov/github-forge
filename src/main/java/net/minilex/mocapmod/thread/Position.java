@@ -1,9 +1,12 @@
 package net.minilex.mocapmod.thread;
 
 import net.minilex.mocapmod.state.BuildBlock;
+import net.minilex.mocapmod.state.EquippedItem;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Position implements Serializable {
     @Serial
@@ -16,6 +19,7 @@ public class Position implements Serializable {
     public float yBodyRot;
     public float yHeadRot;
     public BuildBlock buildBlock;
+    private List<EquippedItem> equippedItem = null;
     public Position(double xx, double yy, double zz, float rotXX, float rotYY, float yyBodyRot, float yyHeadRot) {
         x = xx;
         y = yy;
@@ -24,6 +28,13 @@ public class Position implements Serializable {
         rotY = rotYY;
         yBodyRot = yyBodyRot;
         yHeadRot = yyHeadRot;
+    }
+    public void addEquippedItem(EquippedItem item) {
+        if (equippedItem == null) equippedItem = new ArrayList<EquippedItem>();
+        equippedItem.add(item);
+    }
+    public List<EquippedItem> getEquippedItem() {
+        return equippedItem;
     }
     @Override
     public String toString() {
