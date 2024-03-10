@@ -20,6 +20,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minilex.mocapmod.MocapMod;
 import net.minilex.mocapmod.handler.PlayerHandler;
+import net.minilex.mocapmod.state.RecordingState;
 import net.minilex.mocapmod.thread.FakePlayer;
 import net.minilex.mocapmod.util.EntityData;
 import net.minilex.mocapmod.util.KeyBiding;
@@ -80,6 +81,14 @@ public class ClientEvents {
                     fakePlayer.getAbilities().instabuild = false;
                 }
             }*/
+        }
+
+        @SubscribeEvent
+        public static void onArrowLooseEvent(ArrowLooseEvent event) {
+            if (playerHandler == null) playerHandler = PlayerHandler.getInstance();
+            if (playerHandler.getRecordThread().getState() == RecordingState.RECORDING) {
+                playerHandler.getRecordThread().data.setArrowLoose(event);
+            }
         }
 
         @SubscribeEvent

@@ -5,12 +5,16 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundRotateHeadPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.BowItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minilex.mocapmod.mixin.LivingEntityMixin;
 import net.minilex.mocapmod.state.BuildBlock;
 import net.minilex.mocapmod.state.RecordingState;
 import net.minilex.mocapmod.thread.FakePlayer;
 import net.minilex.mocapmod.thread.Position;
 import net.minilex.mocapmod.thread.RecordThread;
+import net.minilex.mocapmod.util.EntityData;
 
 public class PlayerHandler {
     public static int tickCount = 0;
@@ -67,6 +71,18 @@ public class PlayerHandler {
                     recordThread.setLoot(position[recordThread.positionIndex]);
                     ((LivingEntityMixin)fakePlayer).callDetectEquipmentUpdates();
                     if (position[recordThread.positionIndex].swinging) fakePlayer.swing(InteractionHand.MAIN_HAND);
+                    if (position[recordThread.positionIndex].isBowPulling) {
+                        EntityData.LIVING_ENTITY_FLAGS.set(fakePlayer, (byte)1);
+                    } else if (fakePlayer.getUseItemRemainingTicks() == 0
+                            && position[recordThread.positionIndex].looseArrowStrength != 0) {
+                        BowItem bowItem = (BowItem) Items.BOW;
+                        ((FakePlayer)fakePlayer).getAbilities().instabuild = true;
+                        bowItem.releaseUsing(new ItemStack(bowItem),
+                                Minecraft.getInstance().getSingleplayerServer().overworld(), fakePlayer,
+                                position[recordThread.positionIndex].looseArrowStrength);
+                        ((FakePlayer)fakePlayer).getAbilities().instabuild = false;
+                        EntityData.LIVING_ENTITY_FLAGS.set(fakePlayer, (byte)0);
+                    }
                     if (position[recordThread.positionIndex].buildBlock != null) {
                         if (position[recordThread.positionIndex].buildBlock.getAction() == BuildBlock.Action.PLACE)
                             position[recordThread.positionIndex].buildBlock.placeBlock();

@@ -26,12 +26,14 @@ import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.minilex.mocapmod.MocapMod;
 import net.minilex.mocapmod.state.*;
+import net.minilex.mocapmod.util.Data;
 
 public class RecordThread implements Runnable {
 
@@ -45,6 +47,7 @@ public class RecordThread implements Runnable {
     public LivingEntity fakePlayer;
     public BuildBlock buildBlock;
     private ActorType playerType;
+    public Data data = new Data();
     public Set<Position> result;
     private boolean isLootSet = true;
     private StatusInventory statusInventory;
@@ -122,6 +125,12 @@ public class RecordThread implements Runnable {
             pos.addEquippedItem(equippedItem);
         }
         if (player.swinging && player.swingTime == 0) pos.swinging = true;
+        if (Item.getId(Items.BOW) == Item.getId(player.getUseItem().getItem()) && player.isUsingItem()) {
+            pos.isBowPulling = true;
+        }
+        if (!this.data.isArrowLooseEmpty()) {
+            pos.looseArrowStrength = data.getArrowLooseEvent().getCharge();
+        }
 
         o.writeObject(pos);
     }
