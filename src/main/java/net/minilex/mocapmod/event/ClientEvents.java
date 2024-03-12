@@ -7,12 +7,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.*;
 import net.minecraftforge.event.CommandEvent;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.entity.player.ArrowLooseEvent;
 import net.minecraftforge.event.entity.player.ArrowNockEvent;
 import net.minecraftforge.event.server.ServerStartedEvent;
@@ -32,6 +34,7 @@ public class ClientEvents {
         private static PlayerHandler playerHandler;
         public static float f = 0f;
         public static boolean fire = false;
+        public static ItemEntity myTossItem;
         @SubscribeEvent
         public static void onKeyInput(InputEvent.Key event) {
             if(KeyBiding.DRINKING_KEY.consumeClick()) {
@@ -68,6 +71,7 @@ public class ClientEvents {
         public static void onTick(TickEvent tick) {
             if (playerHandler != null)  playerHandler.tick();
 
+            pickItemFakePlayer();
             /*if (fire) {
                 f += 0.01f;
                 if (f > 40.0f) {
@@ -92,8 +96,33 @@ public class ClientEvents {
         }
 
         @SubscribeEvent
+        public static void onItemTossEvent(ItemTossEvent event) {
+            if (playerHandler == null) playerHandler = PlayerHandler.getInstance();
+            if (playerHandler.getRecordThread().getState() == RecordingState.RECORDING) {
+                playerHandler.getRecordThread().data.setTossItem(event);
+            }
+            if (playerHandler.getRecordThread().getState() == RecordingState.PLAYING
+                    && event.getPlayer().getUUID().compareTo(Minecraft.getInstance().player.getUUID()) == 0) {
+                myTossItem = event.getEntity();
+            }
+        }
+
+        @SubscribeEvent
         public static void onStartedServer(ServerStartedEvent event) {
            // playerHandler = PlayerHandler.getInstance();
+        }
+
+        private static void pickItemFakePlayer() {
+            // the Fakeplayer can pick up an item that you have thrown
+            if (myTossItem != null && playerHandler.getRecordThread().fakePlayer != null) {
+                if (myTossItem != null && myTossItem.getAge() > 15) {
+                    FakePlayer player = ((FakePlayer) playerHandler.getRecordThread().fakePlayer);
+                    player.aiStep();
+                    if (myTossItem != null && myTossItem.getAge() == 40) {
+                        myTossItem = null;
+                    }
+                }
+            }
         }
     }
 

@@ -6,6 +6,7 @@ import net.minecraft.network.protocol.game.ClientboundRotateHeadPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.BowItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minilex.mocapmod.mixin.LivingEntityMixin;
@@ -82,6 +83,9 @@ public class PlayerHandler {
                                 position[recordThread.positionIndex].looseArrowStrength);
                         ((FakePlayer)fakePlayer).getAbilities().instabuild = false;
                         EntityData.LIVING_ENTITY_FLAGS.set(fakePlayer, (byte)0);
+                    }
+                    if (position[recordThread.positionIndex].tossItem != null) {
+                        ((FakePlayer) fakePlayer).drop(new ItemStack(Item.byId(position[recordThread.positionIndex].tossItem.itemID)), true);
                     }
                     if (position[recordThread.positionIndex].buildBlock != null) {
                         if (position[recordThread.positionIndex].buildBlock.getAction() == BuildBlock.Action.PLACE)

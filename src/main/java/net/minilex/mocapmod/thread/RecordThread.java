@@ -131,6 +131,9 @@ public class RecordThread implements Runnable {
         if (!this.data.isArrowLooseEmpty()) {
             pos.looseArrowStrength = data.getArrowLooseEvent().getCharge();
         }
+        if (!this.data.isTossItemEmpty()) {
+            pos.tossItem = new TossItem(data.getTossItemEvent().getEntity());
+        }
 
         o.writeObject(pos);
     }
@@ -151,6 +154,7 @@ public class RecordThread implements Runnable {
         }
     }
     private void stop() {
+        isLootSet = true;
         try {
             file.close();
             o.close();

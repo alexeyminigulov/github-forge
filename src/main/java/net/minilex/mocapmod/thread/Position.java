@@ -2,6 +2,7 @@ package net.minilex.mocapmod.thread;
 
 import net.minilex.mocapmod.state.BuildBlock;
 import net.minilex.mocapmod.state.EquippedItem;
+import net.minilex.mocapmod.state.TossItem;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -21,6 +22,7 @@ public class Position implements Serializable {
     public boolean swinging = false;
     public boolean isBowPulling = false;
     public int looseArrowStrength = 0;
+    public TossItem tossItem;
     public BuildBlock buildBlock;
     private List<EquippedItem> equippedItem = null;
     public Position(double xx, double yy, double zz, float rotXX, float rotYY, float yyBodyRot, float yyHeadRot) {
