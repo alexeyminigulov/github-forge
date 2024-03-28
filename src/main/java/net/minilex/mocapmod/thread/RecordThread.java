@@ -34,6 +34,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minilex.mocapmod.MocapMod;
 import net.minilex.mocapmod.state.*;
 import net.minilex.mocapmod.util.Data;
+import net.minilex.mocapmod.util.SceneUtil;
 
 public class RecordThread implements Runnable {
 
@@ -60,9 +61,10 @@ public class RecordThread implements Runnable {
         instance = this;
         playerType = ActorType.VILLAGER;
     }
-    private Set<Position> readFile() {
+    public Set<Position> readFile(String capname) {
+        dir = new File(Minecraft.getInstance().getSingleplayerServer().getWorldPath(LevelResource.ROOT) + "/" + "mocaps");
         try {
-            FileInputStream fi = new FileInputStream(dir.getAbsolutePath() + "/" + "loh"
+            FileInputStream fi = new FileInputStream(dir.getAbsolutePath() + "/" + capname
                     + ".mocap");
             ObjectInputStream oi = new ObjectInputStream(fi);
 
@@ -163,7 +165,7 @@ public class RecordThread implements Runnable {
         }
     }
     private void read() {
-        result = readFile();
+        result = readFile(this.fileName);
 
         UUID id = UUID.randomUUID();
         GameProfile profile = new GameProfile(id, "Sasha");
@@ -198,7 +200,7 @@ public class RecordThread implements Runnable {
         });
     }
     public void clearMap() {
-        if (result == null) result = readFile();
+        if (result == null) result = readFile(this.fileName);
         List<Position> list = new ArrayList<>(result);
         Collections.reverse(list);
         list.forEach(position -> {
@@ -239,7 +241,7 @@ public class RecordThread implements Runnable {
     }
     public void changedActor() {
         state = RecordingState.PLAYING;
-        result = readFile();
+        result = readFile(this.fileName);
 
         Minecraft minecraft = Minecraft.getInstance();
         if (playerType == ActorType.VILLAGER) fakePlayer = new Villager(EntityType.VILLAGER, minecraft.getSingleplayerServer().getPlayerList().getServer().getLevel(Level.OVERWORLD));
@@ -288,6 +290,22 @@ public class RecordThread implements Runnable {
             }
             state = newState;
             this.positionIndex = 0;
+        } else if ((state == RecordingState.STOP_SCENE || state == RecordingState.EMPTY || state == RecordingState.PLAYING_SCENE) && newState == RecordingState.PLAYING_SCENE) {
+            SceneUtil.getInstance().initScene();
+            state = newState;
+            System.out.println("State is Playing Scene");
+        }  else if ((state == RecordingState.STOP || state == RecordingState.EMPTY || state == RecordingState.RECORDING_SCENE) && newState == RecordingState.RECORDING_SCENE) {
+            SceneUtil.getInstance().startRecord();
+            state = newState;
+            System.out.println("State is Recording Scene");
+        } else if (state == RecordingState.RECORDING_SCENE || state == RecordingState.EDIT_SCENE || state == RecordingState.PLAYING_SCENE && newState == RecordingState.STOP_SCENE) {
+            if (state == RecordingState.RECORDING_SCENE) SceneUtil.getInstance().saveScene();
+            if (state == RecordingState.EDIT_SCENE) SceneUtil.getInstance().saveSceneEdit();
+            if (state == RecordingState.PLAYING_SCENE) SceneUtil.getInstance().stopScene();
+            state = newState;
+        } else if ((state == RecordingState.STOP_SCENE || state == RecordingState.EMPTY) && newState == RecordingState.EDIT_SCENE) {
+            SceneUtil.getInstance().editScene();
+            state = newState;
         }
     }
 }

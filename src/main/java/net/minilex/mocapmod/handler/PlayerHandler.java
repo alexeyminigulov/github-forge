@@ -2,7 +2,6 @@ package net.minilex.mocapmod.handler;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.ClientboundRotateHeadPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.BowItem;
@@ -15,7 +14,9 @@ import net.minilex.mocapmod.state.RecordingState;
 import net.minilex.mocapmod.thread.FakePlayer;
 import net.minilex.mocapmod.thread.Position;
 import net.minilex.mocapmod.thread.RecordThread;
+import net.minilex.mocapmod.util.CommandUtil;
 import net.minilex.mocapmod.util.EntityData;
+import net.minilex.mocapmod.util.SceneUtil;
 
 public class PlayerHandler {
     public static int tickCount = 0;
@@ -40,6 +41,21 @@ public class PlayerHandler {
             recordThread.changeState(RecordingState.PLAYING);
         } else if (recordThread.getState() == RecordingState.PLAYING) {
             recordThread.changeState(RecordingState.STOP);
+        }
+    }
+    public void handleScene() {
+        tickCount = 0;
+        if (CommandUtil.Action.PLAYING == CommandUtil.getInstance().action) {
+            recordThread.changeState(RecordingState.PLAYING_SCENE);
+        }
+        else if (CommandUtil.Action.RECORDING == CommandUtil.getInstance().action) {
+            recordThread.changeState(RecordingState.RECORDING_SCENE);
+        }
+        else if (CommandUtil.Action.STOP == CommandUtil.getInstance().action) {
+            recordThread.changeState(RecordingState.STOP_SCENE);
+        }
+        else if (CommandUtil.Action.EDIT == CommandUtil.getInstance().action) {
+            recordThread.changeState(RecordingState.EDIT_SCENE);
         }
     }
     public void changedActor() {
@@ -98,6 +114,24 @@ public class PlayerHandler {
                         recordThread.clearMap();
                     }
                 }
+            }
+        }
+        if (recordThread.getState() == RecordingState.PLAYING_SCENE) {
+            tickCount++;
+            if (tickCount % 25 == 0) {
+                SceneUtil.getInstance().runScene();
+            }
+        }
+        if (recordThread.getState() == RecordingState.RECORDING_SCENE) {
+            tickCount++;
+            if (tickCount % 25 == 0) {
+                SceneUtil.getInstance().tickRecord();
+            }
+        }
+        if (recordThread.getState() == RecordingState.EDIT_SCENE) {
+            tickCount++;
+            if (tickCount % 25 == 0) {
+                SceneUtil.getInstance().editSceneTick();
             }
         }
     }

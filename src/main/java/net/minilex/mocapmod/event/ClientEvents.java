@@ -49,21 +49,7 @@ public class ClientEvents {
             if(KeyBiding.CHANGE_ACTOR.consumeClick()) {
                 Minecraft.getInstance().player.sendSystemMessage(Component.literal("Pressed key I "));
                 if (playerHandler == null) playerHandler = PlayerHandler.getInstance();
-                playerHandler.changedActor();
-
-
-                Item item = Items.BOW;
-                DefaultedRegistry<Item> itm = BuiltInRegistries.ITEM;
-                ItemStack bowStack = new ItemStack(BuiltInRegistries.ITEM.byId(756));
-                Entity player = playerHandler.getRecordThread().fakePlayer;
-                ItemStack itemStack = new ItemStack(Item.byId(756));
-                player.setItemSlot(EquipmentSlot.MAINHAND, itemStack);
-                if (player instanceof Player) { ((LivingEntityMixin)player).callDetectEquipmentUpdates();}
-                EntityData.ENTITY_FLAGS.set(player, (byte)0);
-                ((Player)player).startUsingItem(((Player)player).getUsedItemHand());
-                EntityData.LIVING_ENTITY_FLAGS.set(player, (byte)0);
-                ((Player)player).setMainArm(HumanoidArm.RIGHT);
-                fire = true;
+                playerHandler.handleScene();
             }
         }
 

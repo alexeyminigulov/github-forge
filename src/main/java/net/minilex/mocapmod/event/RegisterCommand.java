@@ -7,6 +7,7 @@ import net.minecraftforge.server.command.ConfigCommand;
 import net.minilex.mocapmod.MocapMod;
 import net.minilex.mocapmod.commands.ChangeActorTypeCommand;
 import net.minilex.mocapmod.commands.ClearRecordingCommand;
+import net.minilex.mocapmod.commands.SceneCommand;
 import net.minilex.mocapmod.thread.PreLoadParams;
 
 @Mod.EventBusSubscriber(modid = MocapMod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
@@ -18,6 +19,7 @@ public class RegisterCommand
         PreLoadParams.getInstance().registry(event);
         new ClearRecordingCommand(event.getDispatcher());
         new ChangeActorTypeCommand(event.getDispatcher());
+        new SceneCommand(event.getDispatcher());
 
         ConfigCommand.register(event.getDispatcher());
     }
