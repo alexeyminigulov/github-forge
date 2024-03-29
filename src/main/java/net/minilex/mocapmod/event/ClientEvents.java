@@ -27,6 +27,7 @@ import net.minilex.mocapmod.thread.FakePlayer;
 import net.minilex.mocapmod.util.EntityData;
 import net.minilex.mocapmod.util.KeyBiding;
 import net.minilex.mocapmod.mixin.LivingEntityMixin;
+import net.minilex.mocapmod.util.SceneUtil;
 
 public class ClientEvents {
     @Mod.EventBusSubscriber(modid = MocapMod.MODID, value = Dist.CLIENT)
@@ -79,6 +80,10 @@ public class ClientEvents {
             if (playerHandler.getRecordThread().getState() == RecordingState.RECORDING) {
                 playerHandler.getRecordThread().data.setArrowLoose(event);
             }
+            if (playerHandler.getRecordThread().getState() == RecordingState.RECORDING_SCENE ||
+                    playerHandler.getRecordThread().getState() == RecordingState.EDIT_SCENE) {
+                SceneUtil.getInstance().dataForMainPlayer.setArrowLoose(event);
+            }
         }
 
         @SubscribeEvent
@@ -86,6 +91,10 @@ public class ClientEvents {
             if (playerHandler == null) playerHandler = PlayerHandler.getInstance();
             if (playerHandler.getRecordThread().getState() == RecordingState.RECORDING) {
                 playerHandler.getRecordThread().data.setTossItem(event);
+            }
+            if (playerHandler.getRecordThread().getState() == RecordingState.RECORDING_SCENE ||
+                    playerHandler.getRecordThread().getState() == RecordingState.EDIT_SCENE) {
+                SceneUtil.getInstance().dataForMainPlayer.setTossItem(event);
             }
             if (playerHandler.getRecordThread().getState() == RecordingState.PLAYING
                     && event.getPlayer().getUUID().compareTo(Minecraft.getInstance().player.getUUID()) == 0) {

@@ -27,6 +27,7 @@ public class SceneUtil {
     private Player mainPlayer;
     public Set<SceneData> scene;
     private SceneData recordingMainPlayer;
+    public Data dataForMainPlayer = new Data();
     private StatusInventory statusInventory;
     private boolean isLootSet = true;
     private FileOutputStream file;
@@ -200,11 +201,11 @@ public class SceneUtil {
         if (Item.getId(Items.BOW) == Item.getId(mainPlayer.getUseItem().getItem()) && mainPlayer.isUsingItem()) {
             pos.isBowPulling = true;
         }
-        if (!RecordThread.getInstance().data.isArrowLooseEmpty()) {
-            pos.looseArrowStrength = RecordThread.getInstance().data.getArrowLooseEvent().getCharge();
+        if (!dataForMainPlayer.isArrowLooseEmpty()) {
+            pos.looseArrowStrength = dataForMainPlayer.getArrowLooseEvent().getCharge();
         }
-        if (!RecordThread.getInstance().data.isTossItemEmpty()) {
-            pos.tossItem = new TossItem(RecordThread.getInstance().data.getTossItemEvent().getEntity());
+        if (!dataForMainPlayer.isTossItemEmpty()) {
+            pos.tossItem = new TossItem(dataForMainPlayer.getTossItemEvent().getEntity());
         }
 
         this.recordingMainPlayer.addPosition(pos);
