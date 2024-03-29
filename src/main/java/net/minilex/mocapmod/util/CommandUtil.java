@@ -30,13 +30,15 @@ public class CommandUtil {
         this.sceneName = fileName;
         this.action = Action.PLAYING;
     }
-    public void recording() {
+    public void recording(String sceneName) {
+        this.sceneName = sceneName;
         this.action = Action.RECORDING;
     }
     public void stop() {
         this.action = Action.STOP;
     }
-    public void edit(String saveFileName) {
+    public void edit(String sceneName, String saveFileName) {
+        this.sceneName = sceneName;
         this.saveSceneName = saveFileName;
         this.action = Action.EDIT;
     }

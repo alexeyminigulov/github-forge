@@ -27,9 +27,14 @@ public class SceneCommand {
         dispatcher.register(
                 Commands.literal("mc").then(Commands.literal("scene_edit")
                         .then(Commands.argument("scene_name", StringArgumentType.string())
-                                .executes((command) -> {
-                                    return editScene(command.getSource(), StringArgumentType.getString(command, "scene_name"));
-                                }))));
+                                .then(Commands.argument("save_name", StringArgumentType.string())
+                                        .executes((command) -> {
+                                            return editScene(command.getSource(), StringArgumentType.getString(command, "scene_name"), StringArgumentType.getString(command, "save_name"));
+                                        })
+                                )
+                        )));
+
+
         dispatcher.register(Commands.literal("mc").then(Commands.literal("scene_stop").executes((command) -> {
             return stopScene(command.getSource());
         })));
@@ -42,11 +47,11 @@ public class SceneCommand {
     }
     private int recordScene(CommandSourceStack source, String sceneName) throws CommandSyntaxException {
         //if (playerHandler == null) playerHandler = PlayerHandler.getInstance();
-        CommandUtil.getInstance().recording();
+        CommandUtil.getInstance().recording(sceneName);
         return 1;
     }
-    private int editScene(CommandSourceStack source, String sceneName) throws CommandSyntaxException {
-        CommandUtil.getInstance().edit(sceneName);
+    private int editScene(CommandSourceStack source, String sceneName, String saveName) throws CommandSyntaxException {
+        CommandUtil.getInstance().edit(sceneName, saveName);
         return 1;
     }
     private int stopScene(CommandSourceStack source) throws CommandSyntaxException {
