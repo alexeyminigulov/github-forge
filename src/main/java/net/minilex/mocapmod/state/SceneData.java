@@ -4,9 +4,11 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import net.minecraft.client.Minecraft;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.Item;
@@ -29,6 +31,7 @@ public class SceneData implements Serializable {
     public static transient int tickCount = 0;
     public transient int tickKnock = 0;
     public transient Vec3 knockPosition;
+    private transient int deathTime = 0;
 
     public SceneData(Set<Position> positionSet) {
         this.positionSet = positionSet;
@@ -44,6 +47,21 @@ public class SceneData implements Serializable {
         Minecraft.getInstance().getConnection().handlePlayerInfoUpdate(cpf);
     }
     public void run() {
+        if (deathTime > 1) {
+            deathTime--;
+            if (deathTime == 5) {
+                fakePlayer.remove(Entity.RemovalReason.KILLED);
+                this.particleDeath((Player) fakePlayer);
+            }
+        }
+        if (deathTime > 1 || deathTime == 1) return;
+        if (fakePlayer.getLastHurtByMob() != null && fakePlayer.getLastHurtByMob() instanceof Player) {
+            if (fakePlayer.getHealth() < 2f) {
+                deathTime = 20;
+                ((FakePlayer) fakePlayer).setHealth(0);
+            }
+            ((FakePlayer) fakePlayer).setLastHurtByMob(null);
+        }
         fakePlayer.setPos(
                 position[tickCount].x,
                 position[tickCount].y,
@@ -88,7 +106,7 @@ public class SceneData implements Serializable {
     }
     public void editOnTick() {
         if (fakePlayer.getLastHurtByMob() != null && fakePlayer.getLastHurtByMob() instanceof Player) {
-            Player player = Minecraft.getInstance().player;
+            Player player = (Player)fakePlayer.getLastHurtByMob();
             Vec3 vector = new Vec3(player.position().x - fakePlayer.position().x,
                     player.position().y - fakePlayer.position().y,
                     player.position().z - fakePlayer.position().z);
@@ -164,6 +182,17 @@ public class SceneData implements Serializable {
         fakePlayer.lookAt(EntityAnchorArgument.Anchor.EYES, Vec3.ZERO);
         setLoot(pos);
         return fakePlayer;
+    }
+    private void particleDeath(Player player) {
+        for(int i = 0; i < 5; ++i) {
+            double d0 = Math.random() / 10000;
+            double d1 = Math.random() / 10000;
+            d0 = Math.random() > 0.5d ? d0 : d0 * (-1);
+            d1 = Math.random() > 0.5d ? d1 : d1 * (-1);
+            Minecraft.getInstance().level.addParticle(ParticleTypes.CLOUD,
+                    player.getRandomX(1.0), player.getRandomY() + 0.6f, player.getRandomZ(1.0),
+                    d0, 0.005d, d1);
+        }
     }
     private void setLoot(Position pos) {
         List<EquippedItem> equippedItems = pos.getEquippedItem();
