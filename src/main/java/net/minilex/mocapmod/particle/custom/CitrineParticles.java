@@ -7,10 +7,11 @@ import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minilex.mocapmod.thread.FakePlayer;
 import org.jetbrains.annotations.Nullable;
 
 public class CitrineParticles extends TextureSheetParticle {
-    private Player player = Minecraft.getInstance().player;
+    public Player player = Minecraft.getInstance().player;
     protected CitrineParticles(ClientLevel level, double xCoord, double yCoord, double zCoord,
                                double xd, double yd, double zd, SpriteSet spriteSet) {
         super(level, xCoord, yCoord, zCoord, xd, yd, zd);
@@ -19,7 +20,7 @@ public class CitrineParticles extends TextureSheetParticle {
         this.xd = xd;
         this.yd = yd;
         this.zd = zd;
-        this.quadSize *= 1.5f;
+        this.quadSize = 0.25f;
         this.lifetime = 1000;
         this.pickSprite(spriteSet);
 
@@ -29,9 +30,15 @@ public class CitrineParticles extends TextureSheetParticle {
     }
     @Override
     public void tick() {
-        this.xd = player.position().x - this.x;
-        this.yd = player.position().y + 2.5d - this.y;
-        this.zd = player.position().z - this.z;
+        if (player instanceof FakePlayer) {
+            this.xd = (player.position().x - this.x)/3.3;
+            this.yd = (player.position().y + 2.5d - this.y)/3.3;
+            this.zd = (player.position().z - this.z)/3.3;
+        } else {
+            this.xd = player.position().x - this.x;
+            this.yd = player.position().y + 2.5d - this.y;
+            this.zd = player.position().z - this.z;
+        }
 
         super.tick();
     }

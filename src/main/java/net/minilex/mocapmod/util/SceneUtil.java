@@ -30,6 +30,7 @@ public class SceneUtil {
     public Data dataForMainPlayer = new Data();
     private StatusInventory statusInventory;
     private boolean isLootSet = true;
+    public boolean speakerIcon = false;
     private FileOutputStream file;
     private ObjectOutputStream o;
     private static SceneUtil instance;
@@ -206,6 +207,9 @@ public class SceneUtil {
         }
         if (!dataForMainPlayer.isTossItemEmpty()) {
             pos.tossItem = new TossItem(dataForMainPlayer.getTossItemEvent().getEntity());
+        }
+        if (speakerIcon) {
+            pos.speakerIcon = true;
         }
 
         this.recordingMainPlayer.addPosition(pos);

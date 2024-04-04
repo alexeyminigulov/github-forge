@@ -22,6 +22,8 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minilex.mocapmod.MocapMod;
 import net.minilex.mocapmod.handler.PlayerHandler;
+import net.minilex.mocapmod.particle.ModParticles;
+import net.minilex.mocapmod.particle.custom.CitrineParticles;
 import net.minilex.mocapmod.state.RecordingState;
 import net.minilex.mocapmod.thread.FakePlayer;
 import net.minilex.mocapmod.util.EntityData;
@@ -36,8 +38,10 @@ public class ClientEvents {
         public static float f = 0f;
         public static boolean fire = false;
         public static ItemEntity myTossItem;
+        private static CitrineParticles particle;
         @SubscribeEvent
         public static void onKeyInput(InputEvent.Key event) {
+            if (playerHandler == null) playerHandler = PlayerHandler.getInstance();
             if(KeyBiding.DRINKING_KEY.consumeClick()) {
                 /*if (fire) {
                     EntityData.LIVING_ENTITY_FLAGS.set(playerHandler.getRecordThread().fakePlayer, (byte)1);
@@ -51,6 +55,22 @@ public class ClientEvents {
                 Minecraft.getInstance().player.sendSystemMessage(Component.literal("Pressed key I "));
                 if (playerHandler == null) playerHandler = PlayerHandler.getInstance();
                 playerHandler.handleScene();
+            }
+            if(KeyBiding.SPEAKER_ICON.consumeClick()) {
+                if (particle != null) {
+                    particle.remove();
+                    particle = null;
+                    SceneUtil.getInstance().speakerIcon = false;
+                    return;
+                }
+                Player player = Minecraft.getInstance().player;
+                particle = (CitrineParticles) Minecraft.getInstance().particleEngine.createParticle(ModParticles.CITRINE_PARTICLES.get(),
+                        player.position().x, player.position().y + 2.5d, player.position().z,
+                        0, 0.0d, 0);
+                if (playerHandler.getRecordThread().getState() == RecordingState.RECORDING_SCENE ||
+                        playerHandler.getRecordThread().getState() == RecordingState.EDIT_SCENE) {
+                    SceneUtil.getInstance().speakerIcon = true;
+                }
             }
         }
 
