@@ -31,6 +31,9 @@ public class CitrineParticles extends TextureSheetParticle {
     @Override
     public void tick() {
         if (player instanceof FakePlayer) {
+            if (player.isDeadOrDying() || player.isRemoved()) {
+                this.remove();
+            }
             this.xd = (player.position().x - this.x)/3.3;
             this.yd = (player.position().y + 2.5d - this.y)/3.3;
             this.zd = (player.position().z - this.z)/3.3;
