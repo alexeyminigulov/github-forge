@@ -58,13 +58,22 @@ public class SceneData implements Serializable {
             }
         }
         if (deathTime > 1 || deathTime == 1) return;
+
+        if (deathTime == 0) this.death();
+        if (deathTime == 0) this.editOnDamage();
+        if (deathTime == 0 && tickKnock == 0) this.action();
+    }
+    private void death() {
         if (fakePlayer.getLastHurtByMob() != null && fakePlayer.getLastHurtByMob() instanceof Player) {
             if (fakePlayer.getHealth() < 2f) {
                 deathTime = 20;
-                ((FakePlayer) fakePlayer).setHealth(0);
+                ((FakePlayer) fakePlayer).kill();
+                ((FakePlayer) fakePlayer).setLastHurtByMob(null);
+                position[tickCount].dead = true;
             }
-            ((FakePlayer) fakePlayer).setLastHurtByMob(null);
         }
+    }
+    private void action() {
         fakePlayer.setPos(
                 position[tickCount].x,
                 position[tickCount].y,
@@ -108,6 +117,10 @@ public class SceneData implements Serializable {
                 position[tickCount].buildBlock.placeBlock();
             else position[tickCount].buildBlock.breakBlock();
         }
+        if (position[tickCount].dead) {
+            deathTime = 20;
+            ((FakePlayer) fakePlayer).kill();
+        }
         if(tickCount == position.length-5) {
             tickCount = 0;
             clearMap();
@@ -116,7 +129,7 @@ public class SceneData implements Serializable {
     public void addPosition(Position position) {
         this.positionSet.add(position);
     }
-    public void editOnTick() {
+    private void editOnDamage() {
         if (fakePlayer.getLastHurtByMob() != null && fakePlayer.getLastHurtByMob() instanceof Player) {
             Player player = (Player)fakePlayer.getLastHurtByMob();
             Vec3 vector = new Vec3(player.position().x - fakePlayer.position().x,
@@ -164,7 +177,6 @@ public class SceneData implements Serializable {
             tickKnock--;
             return;
         }
-        this.run();
     }
     public SceneData getEditSceneData() {
         SceneData sceneData = new SceneData(new LinkedHashSet<>());

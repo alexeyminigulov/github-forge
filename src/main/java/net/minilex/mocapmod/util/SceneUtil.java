@@ -56,7 +56,7 @@ public class SceneUtil {
     }
     public void editSceneTick() {
         for (SceneData sceneData : scene) {
-            sceneData.editOnTick();
+            sceneData.run();
         }
         this.tickRecord();
         SceneData.tickCount++;

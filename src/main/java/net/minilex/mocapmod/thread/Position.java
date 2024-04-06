@@ -24,6 +24,7 @@ public class Position implements Serializable {
     public int looseArrowStrength = 0;
     public boolean hurtAnim = false;
     public boolean speakerIcon = false;
+    public boolean dead = false;
     public TossItem tossItem;
     public BuildBlock buildBlock;
     private List<EquippedItem> equippedItem = null;
