@@ -22,6 +22,7 @@ import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.UUID;
 
 public class SceneUtil {
     private Player mainPlayer;
@@ -98,6 +99,13 @@ public class SceneUtil {
         for (SceneData sceneData : scene) {
             sceneData.init();
         }
+    }
+    public boolean isPlayerSpeak(UUID id) {
+        if (scene == null || scene.isEmpty()) return false;
+        for (SceneData sceneData : scene) {
+            if (sceneData.fakePlayer.getUUID() == id && sceneData.speak) return true;
+        }
+        return false;
     }
     private void initFile(String capname) {
         try {

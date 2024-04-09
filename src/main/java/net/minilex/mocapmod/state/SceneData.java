@@ -17,8 +17,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minilex.mocapmod.mixin.LivingEntityMixin;
-import net.minilex.mocapmod.particle.ModParticles;
-import net.minilex.mocapmod.particle.custom.CitrineParticles;
 import net.minilex.mocapmod.thread.FakePlayer;
 import net.minilex.mocapmod.thread.Position;
 import net.minilex.mocapmod.util.CommandUtil;
@@ -34,7 +32,7 @@ public class SceneData implements Serializable {
     public static transient int tickCount = 0;
     public transient int tickKnock = 0;
     public transient Vec3 knockPosition;
-    private transient CitrineParticles speakerParticle;
+    public transient boolean speak = false;
     private transient int deathTime = 0;
 
     public SceneData(Set<Position> positionSet) {
@@ -98,14 +96,8 @@ public class SceneData implements Serializable {
             ((FakePlayer)fakePlayer).getAbilities().instabuild = false;
             EntityData.LIVING_ENTITY_FLAGS.set(fakePlayer, (byte)0);
         }
-        if (speakerParticle == null && position[tickCount].speakerIcon) {
-            speakerParticle = (CitrineParticles) Minecraft.getInstance().particleEngine.createParticle(ModParticles.CITRINE_PARTICLES.get(),
-                    fakePlayer.position().x, fakePlayer.position().y + 2.5d, fakePlayer.position().z,
-                    0, 0.0d, 0);
-            speakerParticle.player = fakePlayer;
-        } else if (!position[tickCount].speakerIcon && speakerParticle != null) {
-            speakerParticle.remove();
-            speakerParticle = null;
+        if (this.speak != position[tickCount].speakerIcon) {
+            this.speak = position[tickCount].speakerIcon;
         }
         if (position[tickCount].hurtAnim) {
             ((FakePlayer) fakePlayer).hurt(Minecraft.getInstance().level.damageSources().cactus(), 0.1f);
