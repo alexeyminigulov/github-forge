@@ -17,6 +17,15 @@ public class SceneCommand {
                                 .executes((command) -> {
                                     return playScene(command.getSource(), StringArgumentType.getString(command, "scene_name"));
                                 }))));
+        dispatcher.register(
+                Commands.literal("mc").then(Commands.literal("scene_play")
+                        .then(Commands.argument("scene_name", StringArgumentType.string())
+                                .then(Commands.argument("script_name", StringArgumentType.string())
+                                        .executes((command) -> {
+                                            return playScene(command.getSource(), StringArgumentType.getString(command, "scene_name"), StringArgumentType.getString(command, "script_name"));
+                                        })
+                                )
+                        )));
 
         dispatcher.register(
                 Commands.literal("mc").then(Commands.literal("scene_record")
@@ -40,9 +49,10 @@ public class SceneCommand {
         })));
     }
 
-    private int playScene(CommandSourceStack source, String sceneName) throws CommandSyntaxException {
+    private int playScene(CommandSourceStack source, String sceneName, String... scriptName) throws CommandSyntaxException {
         //if (playerHandler == null) playerHandler = PlayerHandler.getInstance();
         CommandUtil.getInstance().playing(sceneName);
+        if (scriptName.length > 0) CommandUtil.getInstance().addScript(scriptName[0]);
         return 1;
     }
     private int recordScene(CommandSourceStack source, String sceneName) throws CommandSyntaxException {
