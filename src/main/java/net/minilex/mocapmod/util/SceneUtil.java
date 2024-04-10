@@ -32,6 +32,7 @@ public class SceneUtil {
     private StatusInventory statusInventory;
     private boolean isLootSet = true;
     public boolean speakerIcon = false;
+    public boolean ignoreAttack = false;
     private FileOutputStream file;
     private ObjectOutputStream o;
     private static SceneUtil instance;
@@ -218,6 +219,9 @@ public class SceneUtil {
         }
         if (speakerIcon) {
             pos.speakerIcon = true;
+        }
+        if (ignoreAttack) {
+            pos.ignoreAttack = true;
         }
 
         this.recordingMainPlayer.addPosition(pos);

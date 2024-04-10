@@ -59,7 +59,8 @@ public class SceneData implements Serializable {
         if (deathTime > 1 || deathTime == 1) return;
 
         if (deathTime == 0) this.death();
-        if (deathTime == 0) this.editOnDamage();
+        if (deathTime == 0 && !position[tickCount].ignoreAttack) this.editOnDamage();
+        if (deathTime == 0 && position[tickCount].ignoreAttack) this.knockBack();
         if (deathTime == 0 && tickKnock == 0) this.action();
     }
     private void death() {
@@ -121,6 +122,30 @@ public class SceneData implements Serializable {
     }
     public void addPosition(Position position) {
         this.positionSet.add(position);
+    }
+    private void knockBack() {
+        if (fakePlayer.getLastHurtByMob() != null && fakePlayer.getLastHurtByMob() instanceof Player) {
+            Player player = (Player)fakePlayer.getLastHurtByMob();
+            Vec3 vector = new Vec3(player.position().x - fakePlayer.position().x,
+                    player.position().y - fakePlayer.position().y,
+                    player.position().z - fakePlayer.position().z);
+            fakePlayer.knockback(0.3f, vector.x, vector.z);
+            fakePlayer.aiStep();
+            fakePlayer.setLastHurtByMob(null);
+            position[tickCount].hurtAnim = true;
+            tickKnock += 5;
+            return;
+        }
+        if (tickKnock > 0) {
+            fakePlayer.aiStep();
+            position[tickCount].x = fakePlayer.getX();
+            position[tickCount].y = fakePlayer.getY();
+            position[tickCount].z = fakePlayer.getZ();
+            tickKnock--;
+            if (tickKnock == 0) {
+                tickCount += 6;
+            }
+        }
     }
     private void editOnDamage() {
         if (fakePlayer.getLastHurtByMob() != null && fakePlayer.getLastHurtByMob() instanceof Player) {

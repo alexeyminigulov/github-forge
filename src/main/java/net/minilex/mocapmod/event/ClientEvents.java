@@ -13,8 +13,6 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minilex.mocapmod.MocapMod;
 import net.minilex.mocapmod.handler.PlayerHandler;
-import net.minilex.mocapmod.particle.ModParticles;
-import net.minilex.mocapmod.particle.custom.CitrineParticles;
 import net.minilex.mocapmod.state.RecordingState;
 import net.minilex.mocapmod.thread.FakePlayer;
 import net.minilex.mocapmod.util.KeyBiding;
@@ -34,13 +32,11 @@ public class ClientEvents {
         public static void onKeyInput(InputEvent.Key event) {
             if (playerHandler == null) playerHandler = PlayerHandler.getInstance();
             if(KeyBiding.DRINKING_KEY.consumeClick()) {
-                /*if (fire) {
-                    EntityData.LIVING_ENTITY_FLAGS.set(playerHandler.getRecordThread().fakePlayer, (byte)1);
-                    return;
-                }*/
-
                 if (playerHandler == null) playerHandler = PlayerHandler.getInstance();
-                playerHandler.handle();
+                if (playerHandler.getRecordThread().getState() == RecordingState.RECORDING_SCENE ||
+                        playerHandler.getRecordThread().getState() == RecordingState.EDIT_SCENE) {
+                    SceneUtil.getInstance().ignoreAttack = !SceneUtil.getInstance().ignoreAttack;
+                }
             }
             if(KeyBiding.CHANGE_ACTOR.consumeClick()) {
                 Minecraft.getInstance().player.sendSystemMessage(Component.literal("Pressed key I "));
