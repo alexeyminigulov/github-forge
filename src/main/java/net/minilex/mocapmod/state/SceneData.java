@@ -64,12 +64,18 @@ public class SceneData implements Serializable {
         if (deathTime == 0 && tickKnock == 0) this.action();
     }
     private void death() {
-        if (fakePlayer.getLastHurtByMob() != null && fakePlayer.getLastHurtByMob() instanceof Player) {
+        if (fakePlayer.getLastHurtByMob() != null && fakePlayer.getLastHurtByMob() instanceof Player player) {
             if (fakePlayer.getHealth() < 2f) {
                 deathTime = 20;
+                Vec3 vector = new Vec3(player.position().x - fakePlayer.position().x,
+                        player.position().y - fakePlayer.position().y,
+                        player.position().z - fakePlayer.position().z);
+                DeathState deathState = new DeathState(2.1f, vector.x, vector.z);
+                fakePlayer.knockback(deathState.force, deathState.x, deathState.z);
+                fakePlayer.aiStep();
                 ((FakePlayer) fakePlayer).kill();
                 ((FakePlayer) fakePlayer).setLastHurtByMob(null);
-                position[tickCount].dead = true;
+                position[tickCount].dead = deathState;
             }
         }
     }
@@ -111,8 +117,11 @@ public class SceneData implements Serializable {
                 position[tickCount].buildBlock.placeBlock();
             else position[tickCount].buildBlock.breakBlock();
         }
-        if (position[tickCount].dead) {
+        if (position[tickCount].dead != null) {
             deathTime = 20;
+            DeathState deathState = position[tickCount].dead;
+            fakePlayer.knockback(deathState.force, deathState.x, deathState.z);
+            fakePlayer.aiStep();
             ((FakePlayer) fakePlayer).kill();
         }
         if(tickCount == position.length-5) {

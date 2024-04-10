@@ -1,6 +1,7 @@
 package net.minilex.mocapmod.thread;
 
 import net.minilex.mocapmod.state.BuildBlock;
+import net.minilex.mocapmod.state.DeathState;
 import net.minilex.mocapmod.state.EquippedItem;
 import net.minilex.mocapmod.state.TossItem;
 
@@ -25,7 +26,7 @@ public class Position implements Serializable {
     public boolean hurtAnim = false;
     public boolean speakerIcon = false;
     public boolean ignoreAttack = false;
-    public boolean dead = false;
+    public DeathState dead;
     public TossItem tossItem;
     public BuildBlock buildBlock;
     private List<EquippedItem> equippedItem = null;
