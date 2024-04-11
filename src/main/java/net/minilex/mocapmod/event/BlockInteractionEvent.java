@@ -18,7 +18,7 @@ public class BlockInteractionEvent {
     {
         if (event.getPlayer() instanceof ServerPlayer && playerHandler == null)
             playerHandler = PlayerHandler.getInstance();
-        if (playerHandler != null && playerHandler.getRecordThread().getState() == RecordingState.RECORDING) {
+        if (playerHandler != null && playerHandler.getRecordThread().getState() == RecordingState.RECORDING_SCENE) {
             int id = Block.BLOCK_STATE_REGISTRY.getId(event.getState());
             BuildBlock buildBlock = new BuildBlock(id,
                     event.getPos().getX(),
@@ -34,7 +34,7 @@ public class BlockInteractionEvent {
     {
         if (event.getEntity() instanceof ServerPlayer && playerHandler == null)
             playerHandler = PlayerHandler.getInstance();
-        if (playerHandler != null && playerHandler.getRecordThread().getState() == RecordingState.RECORDING) {
+        if (playerHandler != null && playerHandler.getRecordThread().getState() == RecordingState.RECORDING_SCENE) {
             int id = Block.BLOCK_STATE_REGISTRY.getId(event.getState());
             BuildBlock buildBlock = new BuildBlock(id,
                     event.getPos().getX(),

@@ -4,21 +4,25 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.*;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.item.ItemTossEvent;
 import net.minecraftforge.event.entity.player.ArrowLooseEvent;
+import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minilex.mocapmod.MocapMod;
 import net.minilex.mocapmod.handler.PlayerHandler;
 import net.minilex.mocapmod.state.RecordingState;
-import net.minilex.mocapmod.thread.FakePlayer;
-import net.minilex.mocapmod.util.KeyBiding;
-import net.minilex.mocapmod.util.MicrophoneIconRender;
-import net.minilex.mocapmod.util.SceneUtil;
-import net.minilex.mocapmod.util.SpeakerIconRender;
+import net.minilex.mocapmod.state.SceneData;
+import net.minilex.mocapmod.util.*;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class ClientEvents {
     @Mod.EventBusSubscriber(modid = MocapMod.MODID, value = Dist.CLIENT)
@@ -26,7 +30,8 @@ public class ClientEvents {
         private static PlayerHandler playerHandler;
         public static float f = 0f;
         public static boolean fire = false;
-        public static ItemEntity myTossItem;
+        private static Set<ItemEntity> myTossItem = new HashSet<ItemEntity>();;
+        private static Set<TossedItem> myTossItemList = new HashSet<TossedItem>();;
         private static boolean microphone = false;
         @SubscribeEvent
         public static void onKeyInput(InputEvent.Key event) {
@@ -65,27 +70,11 @@ public class ClientEvents {
             if (playerHandler != null)  playerHandler.tick();
 
             pickItemFakePlayer();
-            /*if (fire) {
-                f += 0.01f;
-                if (f > 40.0f) {
-                    FakePlayer fakePlayer = (FakePlayer)playerHandler.getRecordThread().fakePlayer;
-                    BowItem bowItem = (BowItem) fakePlayer.getUseItem().getItem();
-                    //fakePlayer.startUsingItem(fakePlayer.getUsedItemHand());
-                    fakePlayer.getAbilities().instabuild = true;
-                    bowItem.releaseUsing(fakePlayer.getUseItem(), Minecraft.getInstance().getSingleplayerServer().overworld(), fakePlayer, 71986);
-                    EntityData.LIVING_ENTITY_FLAGS.set(fakePlayer, (byte)0);
-                    f = 0;
-                    fakePlayer.getAbilities().instabuild = false;
-                }
-            }*/
         }
 
         @SubscribeEvent
         public static void onArrowLooseEvent(ArrowLooseEvent event) {
             if (playerHandler == null) playerHandler = PlayerHandler.getInstance();
-            if (playerHandler.getRecordThread().getState() == RecordingState.RECORDING) {
-                playerHandler.getRecordThread().data.setArrowLoose(event);
-            }
             if (playerHandler.getRecordThread().getState() == RecordingState.RECORDING_SCENE ||
                     playerHandler.getRecordThread().getState() == RecordingState.EDIT_SCENE) {
                 SceneUtil.getInstance().dataForMainPlayer.setArrowLoose(event);
@@ -95,16 +84,22 @@ public class ClientEvents {
         @SubscribeEvent
         public static void onItemTossEvent(ItemTossEvent event) {
             if (playerHandler == null) playerHandler = PlayerHandler.getInstance();
-            if (playerHandler.getRecordThread().getState() == RecordingState.RECORDING) {
-                playerHandler.getRecordThread().data.setTossItem(event);
-            }
             if (playerHandler.getRecordThread().getState() == RecordingState.RECORDING_SCENE ||
                     playerHandler.getRecordThread().getState() == RecordingState.EDIT_SCENE) {
                 SceneUtil.getInstance().dataForMainPlayer.setTossItem(event);
             }
-            if (playerHandler.getRecordThread().getState() == RecordingState.PLAYING
+            if (playerHandler.getRecordThread().getState() == RecordingState.PLAYING_SCENE
                     && event.getPlayer().getUUID().compareTo(Minecraft.getInstance().player.getUUID()) == 0) {
-                myTossItem = event.getEntity();
+                myTossItem.add(event.getEntity());
+                myTossItemList.add(new TossedItem(event.getEntity()));
+            }
+        }
+        @SubscribeEvent
+        public static void onEntityItemPickupEvent(EntityItemPickupEvent event) {
+            if (playerHandler == null) playerHandler = PlayerHandler.getInstance();
+            if (playerHandler.getRecordThread().getState() == RecordingState.PLAYING_SCENE) {
+                if (myTossItem.isEmpty()) return;
+                myTossItem.remove(event.getItem());
             }
         }
 
@@ -122,15 +117,58 @@ public class ClientEvents {
 
         private static void pickItemFakePlayer() {
             // the Fakeplayer can pick up an item that you have thrown
-            if (myTossItem != null && playerHandler.getRecordThread().fakePlayer != null) {
-                if (myTossItem != null && myTossItem.getAge() > 15) {
-                    FakePlayer player = ((FakePlayer) playerHandler.getRecordThread().fakePlayer);
-                    player.aiStep();
-                    if (myTossItem != null && myTossItem.getAge() == 40) {
-                        myTossItem = null;
+            if (!myTossItem.isEmpty() && isAllPlayerCreated(SceneUtil.getInstance().scene)) {
+                Set<SceneData> scene = SceneUtil.getInstance().scene;
+                for (SceneData sceneData : scene) {
+                    if (anyNearTossItem(myTossItem, sceneData.fakePlayer)) {
+                        System.out.println("Ai Step");
+                        sceneData.fakePlayer.aiStep();
                     }
                 }
+                checkTossItem();
             }
+        }
+        private static void checkTossItem() {
+            if (myTossItemList.isEmpty()) return;
+            for (TossedItem item : myTossItemList) {
+                if (item.oldAge != 0 && item.tick > 0 && item.item.getAge() == item.oldAge && !item.deprecated) {
+                    item.tick--;
+                    if (item.tick == 0) {
+                        item.deprecated = true;
+                    }
+                } else if (!item.deprecated) {
+                    item.tick = 100;
+                    item.oldAge = item.item.getAge();
+                }
+            }
+        }
+        private static boolean anyNearTossItem(Set<ItemEntity> items, Player player) {
+            if (items.isEmpty()) return false;
+            for (ItemEntity item : items) {
+                double d = distance(item.position(), player.position());
+                if (d < 1.5d && !isblackedList(item)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        private static boolean isblackedList(ItemEntity entity) {
+            if (myTossItemList.isEmpty()) return false;
+            for (TossedItem item : myTossItemList) {
+                if (item.item.getUUID().compareTo(entity.getUUID()) == 0 && item.deprecated) return true;
+            }
+            return false;
+        }
+        private static boolean isAllPlayerCreated(Set<SceneData> scene) {
+            if (scene == null || scene.isEmpty()) return false;
+            int size = scene.size();
+            List<SceneData> sceneList = new ArrayList<>(scene);
+            return sceneList.get(size-1).fakePlayer != null;
+        }
+        public static double distance(Vec3 entity1, Vec3 entity2) {
+            double ac = Math.abs(entity2.z - entity1.z);
+            double cb = Math.abs(entity2.x - entity1.x);
+            return Math.hypot(ac, cb);
         }
     }
 
