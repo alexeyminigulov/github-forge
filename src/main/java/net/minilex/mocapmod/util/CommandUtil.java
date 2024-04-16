@@ -18,7 +18,7 @@ public class CommandUtil {
     private ScriptObject[] scriptObjects;
     private static int idxScript = 0;
     private CommandUtil() {
-        this.action = Action.PLAYING;
+        this.action = Action.STOP;
         this.sceneName = "scene_one";
         this.saveSceneName = "saved_scene";
     }

@@ -1,5 +1,5 @@
 {
   "key.category.mocapmod.tutorial": "Mocap Mod",
-  "key.mocapmod.drink_water": "Drink Water",
-  "key.mocapmod.change_actor": "Change Actor"
+  "key.mocapmod.ignore_attack": "Ignore Attack",
+  "key.mocapmod.execute_command": "Execute Command"
 }

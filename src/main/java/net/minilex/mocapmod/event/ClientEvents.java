@@ -36,15 +36,15 @@ public class ClientEvents {
         @SubscribeEvent
         public static void onKeyInput(InputEvent.Key event) {
             if (playerHandler == null) playerHandler = PlayerHandler.getInstance();
-            if(KeyBiding.DRINKING_KEY.consumeClick()) {
+            if(KeyBiding.IGNORE_ATTACK_KEY.consumeClick()) {
                 if (playerHandler == null) playerHandler = PlayerHandler.getInstance();
                 if (playerHandler.getRecordThread().getState() == RecordingState.RECORDING_SCENE ||
                         playerHandler.getRecordThread().getState() == RecordingState.EDIT_SCENE) {
                     SceneUtil.getInstance().ignoreAttack = !SceneUtil.getInstance().ignoreAttack;
                 }
             }
-            if(KeyBiding.CHANGE_ACTOR.consumeClick()) {
-                Minecraft.getInstance().player.sendSystemMessage(Component.literal("Pressed key I "));
+            if(KeyBiding.EXECUTE_COMMAND_KEY.consumeClick()) {
+                Minecraft.getInstance().player.sendSystemMessage(Component.literal("Execute Command "));
                 if (playerHandler == null) playerHandler = PlayerHandler.getInstance();
                 playerHandler.handleScene();
             }
@@ -176,7 +176,7 @@ public class ClientEvents {
     public static class ClientModBusEvents {
         @SubscribeEvent
         public static void onKeyRegister(RegisterKeyMappingsEvent event) {
-            event.register(KeyBiding.DRINKING_KEY);
+            event.register(KeyBiding.IGNORE_ATTACK_KEY);
         }
     }
 }

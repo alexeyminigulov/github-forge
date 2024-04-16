@@ -294,11 +294,9 @@ public class RecordThread implements Runnable {
         } else if ((state == RecordingState.STOP_SCENE || state == RecordingState.EMPTY || state == RecordingState.PLAYING_SCENE) && newState == RecordingState.PLAYING_SCENE) {
             SceneUtil.getInstance().initScene();
             state = newState;
-            System.out.println("State is Playing Scene");
         }  else if ((state == RecordingState.STOP || state == RecordingState.EMPTY || state == RecordingState.STOP_SCENE) && newState == RecordingState.RECORDING_SCENE) {
             SceneUtil.getInstance().startRecord();
             state = newState;
-            System.out.println("State is Recording Scene");
         } else if (state == RecordingState.RECORDING_SCENE || state == RecordingState.EDIT_SCENE || state == RecordingState.PLAYING_SCENE && newState == RecordingState.STOP_SCENE) {
             if (state == RecordingState.RECORDING_SCENE) SceneUtil.getInstance().saveScene();
             if (state == RecordingState.EDIT_SCENE) SceneUtil.getInstance().saveSceneEdit();
