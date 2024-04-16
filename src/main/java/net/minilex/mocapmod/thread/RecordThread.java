@@ -24,6 +24,7 @@ import net.minecraft.world.entity.animal.Fox;
 import net.minecraft.world.entity.animal.Rabbit;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -205,7 +206,7 @@ public class RecordThread implements Runnable {
         Collections.reverse(list);
         list.forEach(position -> {
             if (position.buildBlock != null) {
-                if (position.buildBlock.getAction() == BuildBlock.Action.BREAK) position.buildBlock.placeBlock();
+                if (position.buildBlock.getAction() == BuildBlock.Action.BREAK) position.buildBlock.placeBlock((Player) fakePlayer);
                 else position.buildBlock.breakBlock();
             }
         });

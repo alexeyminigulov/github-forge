@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -73,7 +74,7 @@ public class PlayerHandler {
         }
         if (recordThread.getState() == RecordingState.PLAYING) {
             tickCount++;
-            LivingEntity fakePlayer = recordThread.fakePlayer;
+            Player fakePlayer = (Player) recordThread.fakePlayer;
             if (fakePlayer != null) {
                 if (tickCount % 25 == 0) {
                     Position[] position = recordThread.result.toArray(new Position[recordThread.result.size()]);
@@ -105,7 +106,7 @@ public class PlayerHandler {
                     }
                     if (position[recordThread.positionIndex].buildBlock != null) {
                         if (position[recordThread.positionIndex].buildBlock.getAction() == BuildBlock.Action.PLACE)
-                            position[recordThread.positionIndex].buildBlock.placeBlock();
+                            position[recordThread.positionIndex].buildBlock.placeBlock(fakePlayer);
                         else position[recordThread.positionIndex].buildBlock.breakBlock();
                     }
                     recordThread.positionIndex++;

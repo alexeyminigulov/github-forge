@@ -4,6 +4,7 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import net.minecraft.client.Minecraft;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.server.MinecraftServer;
@@ -29,6 +30,8 @@ public class SceneData implements Serializable {
     public Set<Position> positionSet;
     private transient Position[] position;
     public transient FakePlayer fakePlayer;
+    private transient BlockPos blockPos;
+    private transient int blockDamage;
     public static transient int tickCount = 0;
     public transient int tickKnock = 0;
     public transient Vec3 knockPosition;
@@ -47,6 +50,7 @@ public class SceneData implements Serializable {
 
         ClientboundPlayerInfoUpdatePacket cpf = new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER, (FakePlayer) fakePlayer);
         Minecraft.getInstance().getConnection().handlePlayerInfoUpdate(cpf);
+        clearMap();
     }
     public void run() {
         if (deathTime > 1) {
@@ -113,9 +117,21 @@ public class SceneData implements Serializable {
             ((FakePlayer) fakePlayer).drop(new ItemStack(Item.byId(position[tickCount].tossItem.itemID)), true);
         }
         if (position[tickCount].buildBlock != null) {
-            if (position[tickCount].buildBlock.getAction() == BuildBlock.Action.PLACE)
-                position[tickCount].buildBlock.placeBlock();
-            else position[tickCount].buildBlock.breakBlock();
+            if (position[tickCount].buildBlock.getAction() == BuildBlock.Action.PLACE) {
+                position[tickCount].buildBlock.placeBlock(fakePlayer);
+            }
+            else if (position[tickCount].buildBlock.getAction() == BuildBlock.Action.BREAK) {
+                position[tickCount].buildBlock.breakBlock();
+            } else if (position[tickCount].buildBlock.getAction() == BuildBlock.Action.DESTROY_PROGRESS) {
+                if (blockPos != null && position[tickCount].buildBlock.isEqualTo(blockPos)) {
+                    this.blockDamage++;
+                    position[tickCount].buildBlock.destroyBlock(blockDamage, fakePlayer);
+                } else {
+                    if (blockPos != null) Minecraft.getInstance().getSingleplayerServer().overworld().destroyBlockProgress(fakePlayer.getId(), blockPos, 0);
+                    blockPos = position[tickCount].buildBlock.getBlockPos();
+                    this.blockDamage = 0;
+                }
+            }
         }
         if (position[tickCount].dead != null) {
             deathTime = 20;
@@ -253,13 +269,17 @@ public class SceneData implements Serializable {
             ((FakePlayer) fakePlayer).setItemSlot(eq.getSlot(), new ItemStack(eq.getItem()));
         });
     }
-    private void clearMap() {
+    public void clearMap() {
         List<Position> list = new ArrayList<>(positionSet);
         Collections.reverse(list);
         list.forEach(position -> {
             if (position.buildBlock != null) {
-                if (position.buildBlock.getAction() == BuildBlock.Action.BREAK) position.buildBlock.placeBlock();
-                else position.buildBlock.breakBlock();
+                if (position.buildBlock.getAction() == BuildBlock.Action.BREAK) {
+                    position.buildBlock.placeBlockSimple();
+                }
+                else if (position.buildBlock.getAction() == BuildBlock.Action.PLACE) {
+                    position.buildBlock.breakBlockSimple();
+                }
             }
         });
     }

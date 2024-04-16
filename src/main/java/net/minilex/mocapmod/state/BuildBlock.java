@@ -42,20 +42,40 @@ public class BuildBlock implements Serializable {
     public Action getAction() {
         return action;
     }
-    public void placeBlock() {
+    public boolean isEqualTo(BlockPos block) {
+        return block.getX() == blockPosX && block.getY() == blockPosY && block.getZ() == blockPosZ;
+    }
+    public void destroyBlock(int progress, Player player) {
+        if (getServerLevel().getBlockState(getBlockPos()).isAir()) return;
+        getServerLevel().destroyBlockProgress(player.getId(), getBlockPos(), progress);
+    }
+    public void placeBlock(Player player) {
         ItemStack itemStack = new ItemStack(getBlockState().getBlock().asItem());
         BlockHitResult blockHitResult = BlockHitResult.miss(new Vec3(blockPosX, blockPosY, blockPosZ), Direction.DOWN, getBlockPos());
-        UseOnContext context = new UseOnContext(getPlayer(), InteractionHand.MAIN_HAND, blockHitResult);
+        UseOnContext context = new UseOnContext(player, InteractionHand.MAIN_HAND, blockHitResult);
         itemStack.useOn(context);
-        if (getPlayerHandler().getRecordThread().getState() == RecordingState.PLAYING) {
-            getPlayer().setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(getBlockState().getBlock().asItem()));
+        if (getPlayerHandler().getRecordThread().getState() == RecordingState.PLAYING_SCENE) {
+            player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(getBlockState().getBlock().asItem()));
         }
+        Block block = Block.byItem(getBlockState().getBlock().asItem());
+        Minecraft.getInstance().level.playLocalSound(blockPosX, blockPosY, blockPosZ,
+                block.getSoundType(getBlockState()).getPlaceSound(),
+                SoundSource.BLOCKS, 1f,1f,true);
+    }
+    public void placeBlockSimple() {
+        Minecraft.getInstance().level.setBlock(getBlockPos(), getBlockState(), 1);
+        getServerLevel().setBlock(getBlockPos(), getBlockState(), 1);
     }
     public void breakBlock() {
+        Block block = Block.byItem(getBlockState().getBlock().asItem());
         Minecraft.getInstance().level.playLocalSound(blockPosX, blockPosY, blockPosZ,
-                Blocks.DARK_OAK_WOOD.getSoundType(getBlockState()).getBreakSound(),
+                block.getSoundType(getBlockState()).getBreakSound(),
                 SoundSource.BLOCKS, 1f,1f,true);
         Minecraft.getInstance().level.destroyBlock(getBlockPos(), true);
+        getServerLevel().destroyBlock(getBlockPos(), true);
+    }
+    public void breakBlockSimple() {
+        Minecraft.getInstance().level.destroyBlock(getBlockPos(), false);
         getServerLevel().destroyBlock(getBlockPos(), false);
     }
     /*public int getId() {
@@ -64,16 +84,13 @@ public class BuildBlock implements Serializable {
     private ServerLevel getServerLevel() {
         return Minecraft.getInstance().getSingleplayerServer().overworld();
     }
-    private Player getPlayer() {
-        Player player = ((Player) PlayerHandler.getInstance().getRecordThread().fakePlayer);
-        return player != null ? player : Minecraft.getInstance().player;
-    }
     private PlayerHandler getPlayerHandler() {
         return PlayerHandler.getInstance();
     }
     public enum Action {
         PLACE,
-        BREAK
+        BREAK,
+        DESTROY_PROGRESS
     }
     @Override
     public String toString() {

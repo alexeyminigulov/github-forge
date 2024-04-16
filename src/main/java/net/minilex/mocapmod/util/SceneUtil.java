@@ -234,6 +234,7 @@ public class SceneUtil {
             scene = null;
         }
         if (recordingMainPlayer != null) {
+            recordingMainPlayer.clearMap();
             recordingMainPlayer = null;
         }
     }
