@@ -1,6 +1,7 @@
 package net.minilex.mocapmod.util;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
@@ -91,15 +92,17 @@ public class SceneUtil {
         this.saveFile(result);
         this.clearMap();
     }
-    public void initScene() {
+    public boolean initScene() {
         scene = this.getScene();
         if (scene == null) {
-            scene = new HashSet<SceneData>();
-            scene.add(new SceneData(RecordThread.getInstance().readFile(CommandUtil.instance.getSceneName())));
+            String msg = "Scene " + CommandUtil.getInstance().getSceneName() + " don't exist";
+            Minecraft.getInstance().player.sendSystemMessage(Component.literal(msg));
+            return false;
         }
         for (SceneData sceneData : scene) {
             sceneData.init();
         }
+        return true;
     }
     public boolean isPlayerSpeak(UUID id) {
         if (scene == null || scene.isEmpty()) return false;

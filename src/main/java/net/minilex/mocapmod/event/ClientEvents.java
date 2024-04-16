@@ -44,7 +44,6 @@ public class ClientEvents {
                 }
             }
             if(KeyBiding.EXECUTE_COMMAND_KEY.consumeClick()) {
-                Minecraft.getInstance().player.sendSystemMessage(Component.literal("Execute Command "));
                 if (playerHandler == null) playerHandler = PlayerHandler.getInstance();
                 playerHandler.handleScene();
             }
