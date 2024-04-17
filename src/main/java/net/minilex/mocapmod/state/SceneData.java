@@ -233,7 +233,8 @@ public class SceneData implements Serializable {
     private FakePlayer getPlayer() {
         scriptObject = CommandUtil.getInstance().getNextScriptElement();
         UUID id = UUID.randomUUID();
-        GameProfile profile = new GameProfile(id, scriptObject.name);
+        String name = scriptObject.nameColor + scriptObject.name;
+        GameProfile profile = new GameProfile(id, name);
         Minecraft minecraft = Minecraft.getInstance();
 
         Property property = new Property("textures", scriptObject.skinValue, scriptObject.signature);
