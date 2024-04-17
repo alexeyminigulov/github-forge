@@ -1,5 +1,6 @@
 {
   "key.category.mocapmod.tutorial": "Mocap Mod",
   "key.mocapmod.ignore_attack": "Ignore Attack",
-  "key.mocapmod.execute_command": "Execute Command"
+  "key.mocapmod.execute_command": "Execute Command",
+  "key.mocapmod.get_damage": "Get Damage"
 }

@@ -1,7 +1,6 @@
 package net.minilex.mocapmod.event;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
@@ -61,6 +60,9 @@ public class ClientEvents {
                     }
                     microphone = true;
                 }
+            }
+            if(KeyBiding.GET_DAMAGE_KEY.consumeClick()) {
+                DamageMainPlayer.getInstance().handle();
             }
         }
 
