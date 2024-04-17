@@ -58,7 +58,8 @@ public class CommandUtil {
             String randomName = UUID.randomUUID().toString().substring(0, 4);
             String textureValue = "ewogICJ0aW1lc3RhbXAiIDogMTY4OTUzNDQ4NjI0NywKICAicHJvZmlsZUlkIiA6ICI1YjFiZGQxNDU1MzU0MmM3ODQ5MTMzY2VmODJmMWYwNiIsCiAgInByb2ZpbGVOYW1lIiA6ICJnaW5hdGV0ZXN0IiwKICAic2lnbmF0dXJlUmVxdWlyZWQiIDogdHJ1ZSwKICAidGV4dHVyZXMiIDogewogICAgIlNLSU4iIDogewogICAgICAidXJsIiA6ICJodHRwOi8vdGV4dHVyZXMubWluZWNyYWZ0Lm5ldC90ZXh0dXJlLzc1YjVmZDRmNTE1OWI5MzAxMTg3OWY5NWYyMTA0NDc4OGRmNjVlYTgwYjVjMmZmYTU4NTcxODZlMzEwODZhOWQiCiAgICB9CiAgfQp9";
             String signature = "nAUoIKXm0aPWo9CAa7kuuDdQfT9ZVM3tz42MBSD3/vUeFNAAWrOorGYjXKhHF280nfDmtkdyO43SE3ZuFPDtpZ/u3LfXl9OZkv4Jc/wNQT6qvVnQ+09cI05OlMNAozAZdbrvgz4Dp1NGTabDS6dlWEdIj1EmRGGr0IgVUZGLqdcUaTguTH7boPryiiZDNN8BzPaYe3sYmbEcXSKz6gmoQ/pq/g4FhKfFkP9NK7S6dNO0Xh8zlkTr578wU07sLaegB0E0gxOvQHc0tiXED8+bwRgZstGtMBayuDDlh+O/haru8xt6H7x6dyi1Xo8wU36IHxvKcVLNMd/nYXrqxKatjqF6YsMsUjGxTRMWGDxuQIQ6wuNC3KtapOdXudd8ayfNP2wmTzDhg7N7Ei1dxgXCxcjixXcjcO5LYvNpyFRVsbKTdKy2fwsgoInUY/woOC0K7hLBbXTjzYEptrCqIzfegxlk3aM5x2/sYLUYVUkn1ubR3XtX+eR1tqCgHOmO+TJTe2AdNhriD9ILvUM3NdFVz1iqhH1vm9oTb9PGTzgDrmTpOJ4S8qfgwLIFI2POY0os4zmepC9tje5F9j8vRprvigdej3bT2Hltb/8Ov5CnJJQ8tfYsrytO9YNdYw2YB1kSKV/iaZsP0TPiVzCs9qgOMOziJ344KbhxiY61yijCBQY=";
-            return new ScriptObject(randomName, 12.0f, textureValue, signature);
+            boolean aiStep = false;
+            return new ScriptObject(randomName, 12.0f, textureValue, signature, aiStep);
         }
         if (idxScript >= this.scriptObjects.length) idxScript = 0;
         idxScript++;
@@ -77,7 +78,8 @@ public class CommandUtil {
                 float health = jsonArray.get(i).getAsJsonObject().get("health").getAsFloat();
                 String skinValue = jsonArray.get(i).getAsJsonObject().get("skinValue").getAsString();
                 String signature = jsonArray.get(i).getAsJsonObject().get("signature").getAsString();
-                this.scriptObjects[i] = new ScriptObject(name, health, skinValue, signature);
+                boolean aiStep = jsonArray.get(i).getAsJsonObject().get("aiStep").getAsBoolean();
+                this.scriptObjects[i] = new ScriptObject(name, health, skinValue, signature, aiStep);
             }
         } catch (FileNotFoundException e) {
         }
@@ -94,11 +96,13 @@ public class CommandUtil {
         public float health;
         public String skinValue;
         public String signature;
-        public ScriptObject(String name, float health, String skinValue, String signature) {
+        public boolean aiStep;
+        public ScriptObject(String name, float health, String skinValue, String signature, boolean aiStep) {
             this.name = name;
             this.health = health;
             this.skinValue = skinValue;
             this.signature = signature;
+            this.aiStep = aiStep;
         }
     }
 }

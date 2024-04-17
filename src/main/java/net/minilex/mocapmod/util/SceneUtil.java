@@ -65,6 +65,11 @@ public class SceneUtil {
         SceneData.tickCount++;
     }
     public void stopScene() {
+        if (!scene.isEmpty()) {
+            for (SceneData sceneData : scene) {
+                sceneData.clearMap();
+            }
+        }
         clearMap();
     }
     public void startRecord() {
@@ -232,6 +237,7 @@ public class SceneUtil {
     private void clearMap() {
         if (scene != null) {
             for(SceneData sceneData : scene) {
+                sceneData.clearMap();
                 sceneData.fakePlayer.remove(Entity.RemovalReason.KILLED);
             }
             scene = null;

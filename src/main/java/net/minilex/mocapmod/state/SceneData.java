@@ -30,6 +30,7 @@ public class SceneData implements Serializable {
     public Set<Position> positionSet;
     private transient Position[] position;
     public transient FakePlayer fakePlayer;
+    private transient CommandUtil.ScriptObject scriptObject;
     private transient BlockPos blockPos;
     private transient int blockDamage;
     public static transient int tickCount = 0;
@@ -66,6 +67,7 @@ public class SceneData implements Serializable {
         if (deathTime == 0 && !position[tickCount].ignoreAttack) this.editOnDamage();
         if (deathTime == 0 && position[tickCount].ignoreAttack) this.knockBack();
         if (deathTime == 0 && tickKnock == 0) this.action();
+        if (scriptObject.aiStep) fakePlayer.aiStep();
     }
     private void death() {
         if (fakePlayer.getLastHurtByMob() != null && fakePlayer.getLastHurtByMob() instanceof Player player) {
@@ -229,7 +231,7 @@ public class SceneData implements Serializable {
         return sceneData;
     }
     private FakePlayer getPlayer() {
-        CommandUtil.ScriptObject scriptObject = CommandUtil.getInstance().getNextScriptElement();
+        scriptObject = CommandUtil.getInstance().getNextScriptElement();
         UUID id = UUID.randomUUID();
         GameProfile profile = new GameProfile(id, scriptObject.name);
         Minecraft minecraft = Minecraft.getInstance();
