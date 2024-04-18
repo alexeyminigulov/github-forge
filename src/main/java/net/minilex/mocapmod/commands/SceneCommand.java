@@ -26,6 +26,17 @@ public class SceneCommand {
                                         })
                                 )
                         )));
+        dispatcher.register(
+                Commands.literal("mc").then(Commands.literal("scene_play")
+                        .then(Commands.argument("scene_name", StringArgumentType.string())
+                                .then(Commands.argument("script_name", StringArgumentType.string())
+                                        .then(Commands.argument("get_damage", StringArgumentType.string())
+                                                .executes((command) -> {
+                                                    return playScene(command.getSource(), StringArgumentType.getString(command, "scene_name"), StringArgumentType.getString(command, "script_name"), StringArgumentType.getString(command, "get_damage"));
+                                                })
+                                        )
+                                )
+                        )));
 
         dispatcher.register(
                 Commands.literal("mc").then(Commands.literal("scene_record")
@@ -52,7 +63,8 @@ public class SceneCommand {
     private int playScene(CommandSourceStack source, String sceneName, String... scriptName) throws CommandSyntaxException {
         //if (playerHandler == null) playerHandler = PlayerHandler.getInstance();
         CommandUtil.getInstance().playing(sceneName);
-        if (scriptName.length > 0) CommandUtil.getInstance().addScript(scriptName[0]);
+        if (scriptName.length == 1) CommandUtil.getInstance().addScript(scriptName[0]);
+        if (scriptName.length == 2) CommandUtil.getInstance().setDamage(scriptName[1]);
         return 1;
     }
     private int recordScene(CommandSourceStack source, String sceneName) throws CommandSyntaxException {

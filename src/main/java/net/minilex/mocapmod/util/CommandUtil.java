@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.storage.LevelResource;
 
 import java.io.*;
@@ -18,6 +19,7 @@ public class CommandUtil {
     private String saveSceneName;
     private ScriptObject[] scriptObjects;
     private static int idxScript = 0;
+    public float damage;
     private CommandUtil() {
         this.action = Action.STOP;
         this.sceneName = "scene_one";
@@ -53,6 +55,15 @@ public class CommandUtil {
     }
     public void addScript(String scriptName) {
         this.getScriptElements(scriptName);
+    }
+    public void setDamage(String v) {
+        try {
+            damage = Float.parseFloat(v);
+        } catch (NumberFormatException e) {
+            damage = 0f;
+            String msg = "Parameter damage is inconvertible";
+            Minecraft.getInstance().player.sendSystemMessage(Component.literal(msg));
+        }
     }
     public ScriptObject getNextScriptElement() {
         if (this.scriptObjects == null) {

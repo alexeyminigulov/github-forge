@@ -15,12 +15,14 @@ public class DamageMainPlayer {
     private PlayerHandler playerHandler;
     private SceneUtil sceneUtil;
     private Player closerPlayer;
+    private CommandUtil commandUtil;
     private DamageMainPlayer() {
         minecraft = Minecraft.getInstance();
         mainPlayer = minecraft.player;
         playerHandler = PlayerHandler.getInstance();
         sceneUtil = SceneUtil.getInstance();
         remotePlayer = minecraft.getSingleplayerServer().overworld().getPlayerByUUID(mainPlayer.getUUID());
+        commandUtil = CommandUtil.getInstance();
     }
     public static DamageMainPlayer getInstance() {
         if (instance == null) {
@@ -45,7 +47,7 @@ public class DamageMainPlayer {
                 closerPlayer.position().z - mainPlayer.position().z);
         remotePlayer.knockback(0.3f, vector.x, vector.z);
         //DamageSource damagesource = new DamageSource(minecraft.level.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(DamageTypes.CACTUS), null, null);
-        remotePlayer.hurt(mainPlayer.damageSources().outOfWorld(), 1.5f);
+        remotePlayer.hurt(mainPlayer.damageSources().outOfWorld(), commandUtil.damage);
     }
     private double distance(Player fakePlayer) {
         double ac = Math.abs(fakePlayer.getZ() - mainPlayer.getZ());
