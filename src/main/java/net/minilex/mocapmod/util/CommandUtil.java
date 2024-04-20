@@ -106,6 +106,7 @@ public class CommandUtil {
                 this.scriptObjects[i] = new ScriptObject(name, health, skinValue, signature, aiStep, nameColor);
             }
         } catch (FileNotFoundException e) {
+            Minecraft.getInstance().player.sendSystemMessage(Component.literal("Script don't found!!! "));
         }
     }
     public static CommandUtil getInstance() {

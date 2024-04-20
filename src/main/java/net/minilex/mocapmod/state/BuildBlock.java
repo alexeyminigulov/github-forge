@@ -50,17 +50,20 @@ public class BuildBlock implements Serializable {
         getServerLevel().destroyBlockProgress(player.getId(), getBlockPos(), progress);
     }
     public void placeBlock(Player player) {
-        ItemStack itemStack = new ItemStack(getBlockState().getBlock().asItem());
+        /*ItemStack itemStack = new ItemStack(getBlockState().getBlock().asItem());
         BlockHitResult blockHitResult = BlockHitResult.miss(new Vec3(blockPosX, blockPosY, blockPosZ), Direction.DOWN, getBlockPos());
         UseOnContext context = new UseOnContext(player, InteractionHand.MAIN_HAND, blockHitResult);
         itemStack.useOn(context);
         if (getPlayerHandler().getRecordThread().getState() == RecordingState.PLAYING_SCENE) {
             player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(getBlockState().getBlock().asItem()));
-        }
+        }*/
         Block block = Block.byItem(getBlockState().getBlock().asItem());
         Minecraft.getInstance().level.playLocalSound(blockPosX, blockPosY, blockPosZ,
                 block.getSoundType(getBlockState()).getPlaceSound(),
                 SoundSource.BLOCKS, 1f,1f,true);
+        Minecraft.getInstance().level.setBlock(getBlockPos(), getBlockState(), 1);
+        getServerLevel().setBlock(getBlockPos(), getBlockState(), 1);
+        getServerLevel().destroyBlockProgress(player.getId(), getBlockPos(), -1);
     }
     public void placeBlockSimple() {
         Minecraft.getInstance().level.setBlock(getBlockPos(), getBlockState(), 1);

@@ -63,7 +63,7 @@ public class SceneCommand {
     private int playScene(CommandSourceStack source, String sceneName, String... scriptName) throws CommandSyntaxException {
         //if (playerHandler == null) playerHandler = PlayerHandler.getInstance();
         CommandUtil.getInstance().playing(sceneName);
-        if (scriptName.length == 1) CommandUtil.getInstance().addScript(scriptName[0]);
+        if (scriptName.length >= 1) CommandUtil.getInstance().addScript(scriptName[0]);
         if (scriptName.length == 2) CommandUtil.getInstance().setDamage(scriptName[1]);
         return 1;
     }
