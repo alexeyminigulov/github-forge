@@ -9,6 +9,7 @@
   ],
   "client":
   [
+    "AbstractClientPlayerMixin"
   ],
   "injectors": { "defaultRequire": 1 },
   "refmap": "mixins.mocapmod.refmap.json"

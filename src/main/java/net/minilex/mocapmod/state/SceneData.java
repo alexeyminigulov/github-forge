@@ -237,8 +237,8 @@ public class SceneData implements Serializable {
         GameProfile profile = new GameProfile(id, name);
         Minecraft minecraft = Minecraft.getInstance();
 
-        Property property = new Property("textures", scriptObject.skinValue, scriptObject.signature);
-        profile.getProperties().put("textures", property);
+        Property property = new Property("default_textures", scriptObject.srcTexture, scriptObject.sex);
+        profile.getProperties().put("default_textures", property);
 
         fakePlayer = new FakePlayer(minecraft.getSingleplayerServer(),
                 minecraft.getSingleplayerServer().getPlayerList().getServer().getLevel(Level.OVERWORLD),
