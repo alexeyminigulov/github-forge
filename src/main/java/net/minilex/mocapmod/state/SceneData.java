@@ -10,6 +10,12 @@ import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.animal.Fox;
+import net.minecraft.world.entity.animal.Rabbit;
+import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.Item;
@@ -29,7 +35,7 @@ import java.util.*;
 public class SceneData implements Serializable {
     public Set<Position> positionSet;
     private transient Position[] position;
-    public transient FakePlayer fakePlayer;
+    public transient LivingEntity fakePlayer;
     private transient CommandUtil.ScriptObject scriptObject;
     private transient BlockPos blockPos;
     private transient int blockDamage;
@@ -47,18 +53,20 @@ public class SceneData implements Serializable {
         fakePlayer = getPlayer();
         position = positionSet.toArray(new Position[positionSet.size()]);
         MinecraftServer minecraftServer = Minecraft.getInstance().getSingleplayerServer();
-        minecraftServer.overworld().addNewPlayer((FakePlayer) fakePlayer);
-
-        ClientboundPlayerInfoUpdatePacket cpf = new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER, (FakePlayer) fakePlayer);
-        Minecraft.getInstance().getConnection().handlePlayerInfoUpdate(cpf);
-        clearMap();
+        if (fakePlayer instanceof FakePlayer) {
+            minecraftServer.overworld().addNewPlayer((FakePlayer) fakePlayer);
+            ClientboundPlayerInfoUpdatePacket cpf = new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER, (FakePlayer) fakePlayer);
+            Minecraft.getInstance().getConnection().handlePlayerInfoUpdate(cpf);
+            clearMap();
+        }
+        else minecraftServer.overworld().addFreshEntity(fakePlayer);
     }
     public void run() {
         if (deathTime > 1) {
             deathTime--;
             if (deathTime == 5) {
                 fakePlayer.remove(Entity.RemovalReason.KILLED);
-                this.particleDeath((Player) fakePlayer);
+                this.particleDeath((LivingEntity) fakePlayer);
             }
         }
         if (deathTime > 1 || deathTime == 1) return;
@@ -79,8 +87,8 @@ public class SceneData implements Serializable {
                 DeathState deathState = new DeathState(2.1f, vector.x, vector.z);
                 fakePlayer.knockback(deathState.force, deathState.x, deathState.z);
                 fakePlayer.aiStep();
-                ((FakePlayer) fakePlayer).kill();
-                ((FakePlayer) fakePlayer).setLastHurtByMob(null);
+                ((LivingEntity) fakePlayer).kill();
+                ((LivingEntity) fakePlayer).setLastHurtByMob(null);
                 position[tickCount].dead = deathState;
             }
         }
@@ -113,21 +121,21 @@ public class SceneData implements Serializable {
             this.speak = position[tickCount].speakerIcon;
         }
         if (position[tickCount].hurtAnim) {
-            ((FakePlayer) fakePlayer).hurt(Minecraft.getInstance().level.damageSources().cactus(), 0.1f);
+            fakePlayer.hurt(Minecraft.getInstance().level.damageSources().cactus(), 0.1f);
         }
         if (position[tickCount].tossItem != null) {
             ((FakePlayer) fakePlayer).drop(new ItemStack(Item.byId(position[tickCount].tossItem.itemID)), true);
         }
         if (position[tickCount].buildBlock != null) {
             if (position[tickCount].buildBlock.getAction() == BuildBlock.Action.PLACE) {
-                position[tickCount].buildBlock.placeBlock(fakePlayer);
+                position[tickCount].buildBlock.placeBlock((FakePlayer) fakePlayer);
             }
             else if (position[tickCount].buildBlock.getAction() == BuildBlock.Action.BREAK) {
                 position[tickCount].buildBlock.breakBlock();
             } else if (position[tickCount].buildBlock.getAction() == BuildBlock.Action.DESTROY_PROGRESS) {
                 if (blockPos != null && position[tickCount].buildBlock.isEqualTo(blockPos)) {
                     this.blockDamage++;
-                    position[tickCount].buildBlock.destroyBlock(blockDamage, fakePlayer);
+                    position[tickCount].buildBlock.destroyBlock(blockDamage, (FakePlayer) fakePlayer);
                 } else {
                     if (blockPos != null) Minecraft.getInstance().getSingleplayerServer().overworld().destroyBlockProgress(fakePlayer.getId(), blockPos, 0);
                     blockPos = position[tickCount].buildBlock.getBlockPos();
@@ -140,7 +148,7 @@ public class SceneData implements Serializable {
             DeathState deathState = position[tickCount].dead;
             fakePlayer.knockback(deathState.force, deathState.x, deathState.z);
             fakePlayer.aiStep();
-            ((FakePlayer) fakePlayer).kill();
+            fakePlayer.kill();
         }
         if(tickCount == position.length-5) {
             tickCount = 0;
@@ -230,8 +238,25 @@ public class SceneData implements Serializable {
         }
         return sceneData;
     }
-    private FakePlayer getPlayer() {
+    private LivingEntity getPlayer() {
         scriptObject = CommandUtil.getInstance().getNextScriptElement();
+        if (scriptObject.playerType != null) {
+            // by default
+            fakePlayer = new Villager(EntityType.VILLAGER, Minecraft.getInstance().getSingleplayerServer().getPlayerList().getServer().getLevel(Level.OVERWORLD));
+            if (scriptObject.playerType == ActorType.VILLAGER) {
+                fakePlayer = new Villager(EntityType.VILLAGER, Minecraft.getInstance().getSingleplayerServer().getPlayerList().getServer().getLevel(Level.OVERWORLD));
+            }
+            if (scriptObject.playerType == ActorType.ZOMBIE) {
+                fakePlayer = new Zombie(EntityType.ZOMBIE, Minecraft.getInstance().getSingleplayerServer().getPlayerList().getServer().getLevel(Level.OVERWORLD));
+            }
+            if (scriptObject.playerType == ActorType.FOX) {
+                fakePlayer = new Fox(EntityType.FOX, Minecraft.getInstance().getSingleplayerServer().getPlayerList().getServer().getLevel(Level.OVERWORLD));
+            }
+            if (scriptObject.playerType == ActorType.RABBIT) {
+                fakePlayer = new Rabbit(EntityType.RABBIT, Minecraft.getInstance().getSingleplayerServer().getPlayerList().getServer().getLevel(Level.OVERWORLD));
+            }
+            return fakePlayer;
+        }
         UUID id = UUID.randomUUID();
         String name = scriptObject.nameColor + scriptObject.name;
         GameProfile profile = new GameProfile(id, name);
@@ -254,7 +279,7 @@ public class SceneData implements Serializable {
         fakePlayer.setHealth(scriptObject.health);
         return fakePlayer;
     }
-    private void particleDeath(Player player) {
+    private void particleDeath(LivingEntity player) {
         for(int i = 0; i < 5; ++i) {
             double d0 = Math.random() / 10000;
             double d1 = Math.random() / 10000;
@@ -266,6 +291,7 @@ public class SceneData implements Serializable {
         }
     }
     private void setLoot(Position pos) {
+        if (!(fakePlayer instanceof FakePlayer)) return;
         List<EquippedItem> equippedItems = pos.getEquippedItem();
         if (equippedItems == null) return;
         equippedItems.forEach((EquippedItem eq) -> {

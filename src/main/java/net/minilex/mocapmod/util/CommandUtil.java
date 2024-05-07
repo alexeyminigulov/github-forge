@@ -8,6 +8,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.storage.LevelResource;
+import net.minilex.mocapmod.state.ActorType;
 
 import java.io.*;
 import java.util.UUID;
@@ -74,7 +75,7 @@ public class CommandUtil {
             String sex = "male";
             boolean aiStep = false;
             ChatFormatting nameColor = ChatFormatting.WHITE;
-            return new ScriptObject(randomName, 12.0f, textureValue, signature, srcTexture, sex, aiStep, nameColor);
+            return new ScriptObject(randomName, 12.0f, textureValue, signature, srcTexture, sex, aiStep, nameColor, null);
         }
         if (idxScript >= this.scriptObjects.length) idxScript = 0;
         idxScript++;
@@ -107,7 +108,18 @@ public class CommandUtil {
                     case "green" -> ChatFormatting.DARK_GREEN;
                     default -> ChatFormatting.WHITE;
                 };
-                this.scriptObjects[i] = new ScriptObject(name, health, skinValue, signature, srcTexture, sex, aiStep, nameColor);
+                ActorType playerType = null;
+                if (jsonArray.get(i).getAsJsonObject().has("playerType")) {
+                    String actorType = jsonArray.get(i).getAsJsonObject().get("playerType").getAsString();
+                    playerType = switch (actorType) {
+                        case "villager" -> ActorType.VILLAGER;
+                        case "zombie" -> ActorType.ZOMBIE;
+                        case "fox" -> ActorType.FOX;
+                        case "rabbit" -> ActorType.RABBIT;
+                        default -> null;
+                    };
+                }
+                this.scriptObjects[i] = new ScriptObject(name, health, skinValue, signature, srcTexture, sex, aiStep, nameColor, playerType);
             }
         } catch (FileNotFoundException e) {
             Minecraft.getInstance().player.sendSystemMessage(Component.literal("Script don't found!!! "));
@@ -129,7 +141,8 @@ public class CommandUtil {
         public String sex;
         public boolean aiStep;
         public ChatFormatting nameColor;
-        public ScriptObject(String name, float health, String skinValue, String signature, String srcTexture, String sex, boolean aiStep, ChatFormatting nameColor) {
+        public ActorType playerType;
+        public ScriptObject(String name, float health, String skinValue, String signature, String srcTexture, String sex, boolean aiStep, ChatFormatting nameColor, ActorType playerType) {
             this.name = name;
             this.health = health;
             this.skinValue = skinValue;
@@ -138,6 +151,7 @@ public class CommandUtil {
             this.sex = sex;
             this.aiStep = aiStep;
             this.nameColor = nameColor;
+            this.playerType = playerType;
         }
     }
 }

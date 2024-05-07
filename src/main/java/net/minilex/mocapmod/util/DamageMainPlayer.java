@@ -1,6 +1,7 @@
 package net.minilex.mocapmod.util;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.minilex.mocapmod.handler.PlayerHandler;
@@ -14,7 +15,7 @@ public class DamageMainPlayer {
     private Player remotePlayer;
     private PlayerHandler playerHandler;
     private SceneUtil sceneUtil;
-    private Player closerPlayer;
+    private LivingEntity closerPlayer;
     private CommandUtil commandUtil;
     private DamageMainPlayer() {
         minecraft = Minecraft.getInstance();
@@ -49,7 +50,7 @@ public class DamageMainPlayer {
         //DamageSource damagesource = new DamageSource(minecraft.level.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(DamageTypes.CACTUS), null, null);
         remotePlayer.hurt(mainPlayer.damageSources().outOfWorld(), commandUtil.damage);
     }
-    private double distance(Player fakePlayer) {
+    private double distance(LivingEntity fakePlayer) {
         double ac = Math.abs(fakePlayer.getZ() - mainPlayer.getZ());
         double cb = Math.abs(fakePlayer.getX() - mainPlayer.getX());
         return Math.hypot(ac, cb);

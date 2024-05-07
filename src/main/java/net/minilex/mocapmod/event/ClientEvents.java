@@ -1,6 +1,7 @@
 package net.minilex.mocapmod.event;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
@@ -143,7 +144,7 @@ public class ClientEvents {
                 }
             }
         }
-        private static boolean anyNearTossItem(Set<ItemEntity> items, Player player) {
+        private static boolean anyNearTossItem(Set<ItemEntity> items, LivingEntity player) {
             if (items.isEmpty()) return false;
             for (ItemEntity item : items) {
                 double d = distance(item.position(), player.position());
