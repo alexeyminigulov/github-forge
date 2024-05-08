@@ -24,6 +24,7 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import net.minilex.mocapmod.entity.ModEntities;
+import net.minilex.mocapmod.entity.client.RhinoRenderer;
 import net.minilex.mocapmod.entity.client.VillagerTwoRenderer;
 import net.minilex.mocapmod.particle.ModParticles;
 import org.slf4j.Logger;
@@ -102,6 +103,7 @@ public class MocapMod
             LOGGER.info("HELLO FROM CLIENT SETUP");
             LOGGER.info("MINECRAFT NAME >> {}", Minecraft.getInstance().getUser().getName());
             EntityRenderers.register(ModEntities.VILLAGER_TWO.get(), VillagerTwoRenderer::new);
+            EntityRenderers.register(ModEntities.RHINO.get(), RhinoRenderer::new);
         }
     }
 

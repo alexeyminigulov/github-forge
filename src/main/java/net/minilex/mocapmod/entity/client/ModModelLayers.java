@@ -9,4 +9,9 @@ public class ModModelLayers {
             new ResourceLocation(MocapMod.MODID, "villager_two_layer"),
             "main"
     );
+
+    public static final ModelLayerLocation RHINO_LAYER = new ModelLayerLocation(
+            new ResourceLocation(MocapMod.MODID, "rhino_layer"),
+            "main"
+    );
 }
