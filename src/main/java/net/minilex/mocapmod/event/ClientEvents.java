@@ -1,6 +1,10 @@
 package net.minilex.mocapmod.event;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -111,6 +115,14 @@ public class ClientEvents {
             boolean isSpeakPlayer = SceneUtil.getInstance().isPlayerSpeak(event.getEntity().getUUID());
             if (!isSpeakPlayer) return;
             SpeakerIconRender.instance().renderSpeakerIcon(event.getEntity(), event.getContent(), event.getPoseStack(), event.getMultiBufferSource());
+        }
+        @SubscribeEvent
+        public static void renderHeldGun(RenderPlayerEvent.Pre event)
+        {
+            /*PlayerRenderer render = event.getRenderer();
+            PlayerModel<AbstractClientPlayer> model = render.getModel();
+            model.rightArmPose= HumanoidModel.ArmPose.BOW_AND_ARROW;
+            model.leftArmPose= HumanoidModel.ArmPose.BOW_AND_ARROW;*/
         }
         @SubscribeEvent
         public static void onRenderHUD(RenderGuiEvent event) {

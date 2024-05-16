@@ -27,6 +27,8 @@ import net.minilex.mocapmod.entity.ModEntities;
 import net.minilex.mocapmod.entity.client.RhinoRenderer;
 import net.minilex.mocapmod.entity.client.VillagerTwoRenderer;
 import net.minilex.mocapmod.particle.ModParticles;
+import net.minilex.mocapmod.vehicle.CarEntities;
+import net.minilex.mocapmod.vehicle.client.SimpleCarRenderer;
 import org.slf4j.Logger;
 
 // The value here should match an entry in the META-INF/mods.toml file
@@ -62,6 +64,7 @@ public class MocapMod
         ITEMS.register(modEventBus);
 
         ModEntities.register(modEventBus);
+        CarEntities.register(modEventBus);
         ModParticles.register(modEventBus);
 
         // Register ourselves for server and other game events we are interested in
@@ -104,6 +107,7 @@ public class MocapMod
             LOGGER.info("MINECRAFT NAME >> {}", Minecraft.getInstance().getUser().getName());
             EntityRenderers.register(ModEntities.VILLAGER_TWO.get(), VillagerTwoRenderer::new);
             EntityRenderers.register(ModEntities.RHINO.get(), RhinoRenderer::new);
+            EntityRenderers.register(CarEntities.SIMPLE_CAR.get(), SimpleCarRenderer::new);
         }
     }
 
