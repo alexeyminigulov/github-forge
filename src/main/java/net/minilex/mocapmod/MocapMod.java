@@ -26,6 +26,7 @@ import net.minecraftforge.registries.RegistryObject;
 import net.minilex.mocapmod.entity.ModEntities;
 import net.minilex.mocapmod.entity.client.RhinoRenderer;
 import net.minilex.mocapmod.entity.client.VillagerTwoRenderer;
+import net.minilex.mocapmod.item.ModItems;
 import net.minilex.mocapmod.particle.ModParticles;
 import net.minilex.mocapmod.vehicle.CarEntities;
 import net.minilex.mocapmod.vehicle.client.SimpleCarRenderer;
@@ -66,6 +67,7 @@ public class MocapMod
         ModEntities.register(modEventBus);
         CarEntities.register(modEventBus);
         ModParticles.register(modEventBus);
+        ModItems.register(modEventBus);
 
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);

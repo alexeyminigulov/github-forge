@@ -5,6 +5,7 @@ import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -19,6 +20,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minilex.mocapmod.MocapMod;
 import net.minilex.mocapmod.handler.PlayerHandler;
+import net.minilex.mocapmod.item.ModItems;
 import net.minilex.mocapmod.state.RecordingState;
 import net.minilex.mocapmod.state.SceneData;
 import net.minilex.mocapmod.util.*;
@@ -119,10 +121,12 @@ public class ClientEvents {
         @SubscribeEvent
         public static void renderHeldGun(RenderPlayerEvent.Pre event)
         {
-            /*PlayerRenderer render = event.getRenderer();
-            PlayerModel<AbstractClientPlayer> model = render.getModel();
-            model.rightArmPose= HumanoidModel.ArmPose.BOW_AND_ARROW;
-            model.leftArmPose= HumanoidModel.ArmPose.BOW_AND_ARROW;*/
+            if (event.getEntity().getItemInHand(InteractionHand.MAIN_HAND).getItem().getDescriptionId().compareTo(ModItems.SAPPHIRE_STAFF.get().getDescriptionId()) == 0) {
+                PlayerRenderer render = event.getRenderer();
+                PlayerModel<AbstractClientPlayer> model = render.getModel();
+                model.rightArmPose= HumanoidModel.ArmPose.BOW_AND_ARROW;
+                model.leftArmPose= HumanoidModel.ArmPose.BOW_AND_ARROW;
+            }
         }
         @SubscribeEvent
         public static void onRenderHUD(RenderGuiEvent event) {
